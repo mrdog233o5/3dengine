@@ -16,23 +16,45 @@ var data = {
 };
 
 function frame() {
-    // fill bg color
-    ctx.fillStyle = "#000000";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // create grid
 
-    angleToCoords([30, 20]);
+    var grid = [];
+    var line = [];
+    var px = [0, 0, 0]; // rgb
+    for (let i = 0; i < canvas.width; i++) {
+        line.push(px);
+    }
+    for (let i = 0; i < canvas.height; i++) {
+        grid.push(line);
+    }
+
+
+
+    flattenTriangle(data.map[0]);
+
+    // draw on screen color
+    for (let i = 0; i < grid.length; i++) {
+        for (let j = 0; j < grid[0].length; j++) {
+            var px = grid[i][j];
+            paintPixel([j, i], `rgb(${px.join(',')})`);
+        }
+    }
 	window.requestAnimationFrame(frame);
 }
 
 function angleToCoords(angle) {
     var fov = Number(data.cam.fov);
     var pxPerDeg = canvas.width / fov;
-    console.log([(angle[0] + (fov / 2)) * pxPerDeg, (angle[1] + ((fov / (canvas.width / canvas.height)) / 2)) * pxPerDeg]);
+    return [(angle[0] + (fov / 2)) * pxPerDeg, (angle[1] + ((fov / (canvas.width / canvas.height)) / 2)) * pxPerDeg];
 }
 
-function paintPixel(x, y, color) {
+function flattenTriangle(triangle) {
+    paintPixel(angleToCoords([20, 10]), "yellow");
+}
+
+function paintPixel(pos, color) {
     ctx.fillStyle = color;
-    ctx.fillRect( x, y, 1, 1 );
+    ctx.fillRect( pos[0], pos[1], 1, 1 );
 }
 
 // resize canva
