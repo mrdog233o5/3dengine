@@ -1,100 +1,93 @@
-const canvas = document.getElementById("canva");
-const ctx = canvas.getContext("2d");
-const length = 100;
-var data = {
-	cam: {
-		pos: [0, 5, 0],
-		fov: 60,
-		angle: [0, -90],
-	},
-	map: [
-		{
-			pos: [
-				[0, -1, 1],
-				[1, -1, -1],
-				[-1, -1, -1],
-			],
-			color: "green",
-		},
-		{
-			pos: [
-				[0, 1, 0],
-				[1, -1, -1],
-				[-1, -1, -1],
-			],
-			color: "yellow",
-		},
-		{
-			pos: [
-				[0, -1, 1],
-				[0, 1, 0],
-				[-1, -1, -1],
-			],
-			color: "blue",
-		},
-		{
-			pos: [
-				[0, -1, 1],
-				[1, -1, -1],
-				[0, 1, 0],
-			],
-			color: "red",
-		},
-	],
-};
+var vertexShaderText = String.raw`
+precision mediump float;
 
-function frame() {
-	// create grid
+attribute vec2 vertPos;
+attribute vec3 vertColor;
+varying vec3 fragColor;
 
-	var grid = [];
-	var line = [];
-	var px = [0, 0, 0]; // rgb
-	for (let i = 0; i < canvas.width; i++) {
-		line.push(px);
+void main() {
+	fragColor = vertColor;
+	gl_Position = vec4(vertPos, 0.0, 1.0);
+}
+`;
+var fragmentShaderText = String.raw`
+precision mediump float;
+
+varying vec3 fragColor;
+
+void main() {
+	gl_FragColor = vec4(fragColor, 1);
+}
+`;
+
+initCanvas();
+
+function initCanvas() {
+	var canvas = document.getElementById("canvas");
+	var gl = canvas.getContext("webgl");
+
+	gl.clearColor(0, 0, 0, 1);
+	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	var vertexShader = gl.createShader(gl.VERTEX_SHADER);
+	var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+	gl.shaderSource(vertexShader, vertexShaderText);
+	gl.shaderSource(fragmentShader, fragmentShaderText);
+
+	gl.compileShader(vertexShader);
+	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
+		console.error("Couldn't compile vertex shader:", gl.getShaderInfoLog(vertexShader));
 	}
-	for (let i = 0; i < canvas.height; i++) {
-		grid.push(line);
+	gl.compileShader(fragmentShader);
+	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
+		console.error("Couldn't compile vertex shader:", gl.getShaderInfoLog(fragmentShader));
 	}
 
-	flattenTriangle(data.map[0]);
+	var program = gl.createProgram();
+	gl.attachShader(program, vertexShader);
+	gl.attachShader(program, fragmentShader);
+	gl.linkProgram(program);
 
-	// draw on screen color
-	for (let i = 0; i < grid.length; i++) {
-		for (let j = 0; j < grid[0].length; j++) {
-			var px = grid[i][j];
-			paintPixel([j, i], `rgb(${px.join(",")})`);
-		}
-	}
-	window.requestAnimationFrame(frame);
+	// 
+	// buffers
+	// 
+	var lenPerRow = 5;
+	var triangleVerticies = new Float32Array([
+		0.0, 0.5,		1, 1, 0,
+		-0.5, -0.5,		0.7, 0, 1.0,
+		0.5, -0.5,		0.1, 1.0, 0.6,
+	]);
+
+	var triangleVertexBufferObject = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+	gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies, gl.STATIC_DRAW);
+
+	var positionAttribLocation = gl.getAttribLocation(program, "vertPos");
+	var colorAttribLocation = gl.getAttribLocation(program, "vertColor");
+
+	gl.vertexAttribPointer(
+		positionAttribLocation,
+		2,
+		gl.FLOAT,
+		gl.FALSE,
+		5 * Float32Array.BYTES_PER_ELEMENT,
+		0
+	);
+	gl.vertexAttribPointer(
+		colorAttribLocation,
+		3,
+		gl.FLOAT,
+		gl.FALSE,
+		5 * Float32Array.BYTES_PER_ELEMENT,
+		2 * Float32Array.BYTES_PER_ELEMENT
+	);
+
+	gl.enableVertexAttribArray(positionAttribLocation);
+	gl.enableVertexAttribArray(colorAttribLocation);
+
+	// 
+	// main render loop
+	// 
+	gl.useProgram(program);
+	gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies.length / lenPerRow);
 }
-
-function angleToCoords(angle) {
-	var fov = Number(data.cam.fov);
-	var pxPerDeg = canvas.width / fov;
-	return [
-		(angle[0] + fov / 2) * pxPerDeg,
-		(angle[1] + fov / (canvas.width / canvas.height) / 2) *
-			pxPerDeg,
-	];
-}
-
-function flattenTriangle(triangle) {
-	paintPixel(angleToCoords([20, 10]), "yellow");
-}
-
-function paintPixel(pos, color) {
-	ctx.fillStyle = color;
-	ctx.fillRect(pos[0], pos[1], 1, 1);
-}
-
-// resize canva
-function resizeCanvas() {
-	// canvas.width = window.innerWidth;
-	// canvas.height = window.innerHeight;
-	canvas.width = 600;
-	canvas.height = 400;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-frame();
