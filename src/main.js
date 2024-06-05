@@ -86,7 +86,7 @@ function initCanvas() {
         2,
         gl.FLOAT,
         gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT,
+        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
         0
     );
     gl.vertexAttribPointer(
@@ -94,7 +94,7 @@ function initCanvas() {
         3,
         gl.FLOAT,
         gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT,
+        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
         2 * Float32Array.BYTES_PER_ELEMENT
     );
 
