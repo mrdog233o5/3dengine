@@ -1,13 +1,13 @@
 var vertexShaderText = String.raw`#version 300 es
 precision highp float;
 
-in vec2 vertPos;
+in vec3 vertPos;
 in vec3 vertColor;
 out vec3 fragColor;
 
 void main() {
     fragColor = vertColor;
-    gl_Position = vec4(vertPos, 0.0, 1.0);
+    gl_Position = vec4(vertPos, 1.0);
 }
 `;
 
@@ -67,11 +67,14 @@ function initCanvas() {
     // 
     // buffers
     // 
-    var lenPerRow = 5;
+    var lenPerRow = 6;
     var triangleVerticies = new Float32Array([
-        0.0, 0.5,        1, 1, 0,
-        -0.5, -0.5,       0.7, 0, 1.0,
-        0.5, -0.5,        0.1, 1.0, 0.6,
+        0.3, 0.5, 1,        1, 1, 0,
+        -0.5, 0, 1,         1, 1, 0,
+        0.3, -0.5, 1,       1, 1, 0,
+        -0.3, 0.5, 0,       1, 0, 1,
+        0.5, 0, 1,          1, 0, 1,
+        -0.3, -0.5, 0,      1, 0, 1,
     ]);
 
     var triangleVertexBufferObject = gl.createBuffer();
@@ -83,7 +86,7 @@ function initCanvas() {
 
     gl.vertexAttribPointer(
         positionAttribLocation,
-        2,
+        3,
         gl.FLOAT,
         gl.FALSE,
         lenPerRow * Float32Array.BYTES_PER_ELEMENT,
@@ -95,7 +98,7 @@ function initCanvas() {
         gl.FLOAT,
         gl.FALSE,
         lenPerRow * Float32Array.BYTES_PER_ELEMENT,
-        2 * Float32Array.BYTES_PER_ELEMENT
+        3 * Float32Array.BYTES_PER_ELEMENT
     );
 
     gl.enableVertexAttribArray(positionAttribLocation);
