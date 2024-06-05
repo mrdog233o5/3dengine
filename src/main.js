@@ -7,7 +7,7 @@ out vec3 fragColor;
 
 void main() {
     fragColor = vertColor;
-    gl_Position = vec4(vertPos, 1.0);
+    gl_Position = vec4(vertPos.x, vertPos.y, vertPos.z, 1);
 }
 `;
 
@@ -69,12 +69,12 @@ function initCanvas() {
     // 
     var lenPerRow = 6;
     var triangleVerticies = new Float32Array([
-        0.3, 0.5, 1,        1, 1, 0,
-        -0.5, 0, 1,         1, 1, 0,
-        0.3, -0.5, 1,       1, 1, 0,
-        -0.3, 0.5, 0,       1, 0, 1,
-        0.5, 0, 1,          1, 0, 1,
-        -0.3, -0.5, 0,      1, 0, 1,
+        0.3, 0.5, -0.5,        1, 1, 0,
+        -0.5, 0, 0,         1, 1, 0,
+        0.3, -0.5, 0.5,       1, 1, 0,
+        -0.3, 0.5, 0.5,       1, 0, 1,
+        0.5, 0, 0,          1, 0, 1,
+        -0.3, -0.5, -0.5,      1, 0, 1,
     ]);
 
     var triangleVertexBufferObject = gl.createBuffer();
@@ -107,5 +107,9 @@ function initCanvas() {
     // 
     // main render loop
     // 
+    gl.enable(gl.DEPTH_TEST);
+    gl.depthFunc(gl.LESS);
+    gl.depthMask(true);
     gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies.length / lenPerRow);
+    
 }
