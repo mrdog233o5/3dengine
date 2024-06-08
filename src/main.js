@@ -89,30 +89,32 @@ function frame() {
         0.05, 0.1, 0,     1, 1, 0,
         0, 0, 0,     1, 1, 0,
     ];
-    var fov = 120;
-    var fovVertical = Math.floor(fov*(canvas.height/canvas.width));
+    var lineVerticies = [];
     var camAngle = 0;
 
     camAngle = i;
     var rotatedCoords = calcRotatedCoord2D(camAngle, [0.3, 0.5]);
     var x = rotatedCoords[0];
     var y = rotatedCoords[1];
-    triangleVerticies = triangleVerticies.concat([
+    lineVerticies = lineVerticies.concat([
         x-0.05, y+0.1, 0,     1, 1, 0,
         x+0.05, y+0.1, 0,     1, 1, 0,
+        x+0.05, y+0.1, 0,     1, 1, 0,
         x, y, 0,     1, 1, 0,
+        x, y, 0,     1, 1, 0,
+        x-0.05, y+0.1, 0,     1, 1, 0,
     ]);
     i+=5;
 
-    // update variables
+    // draw triangles
     var triangleVerticies32 = new Float32Array(triangleVerticies);
 
     var triangleVertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
     gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies32, gl.STATIC_DRAW);
     
-    const positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
-    const colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+    var positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
+    var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
     
     gl.vertexAttribPointer(
         positionAttribLocation,
@@ -135,6 +137,38 @@ function frame() {
     gl.enableVertexAttribArray(colorAttribLocation);
 
     gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies32.length / lenPerRow);
+
+    // draw LINES
+    var lineVerticies32 = new Float32Array(lineVerticies);
+
+    var lineVertexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, lineVertexBufferObject);
+    gl.bufferData(gl.ARRAY_BUFFER, lineVerticies32, gl.STATIC_DRAW);
+    
+    positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
+    colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+    
+    gl.vertexAttribPointer(
+        positionAttribLocation,
+        3,
+        gl.FLOAT,
+        gl.FALSE,
+        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+        0
+    );
+    gl.vertexAttribPointer(
+        colorAttribLocation,
+        3,
+        gl.FLOAT,
+        gl.FALSE,
+        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+        3 * Float32Array.BYTES_PER_ELEMENT
+    );
+    
+    gl.enableVertexAttribArray(positionAttribLocation);
+    gl.enableVertexAttribArray(colorAttribLocation);
+    gl.drawArrays(gl.LINES, 0, lineVerticies32.length / lenPerRow);
+    gl.flush();
 
     // loop
     requestAnimationFrame(frame);
