@@ -26,6 +26,7 @@ void main() {
 // init
 var canvas = document.getElementById("canvas");
 var gl = canvas.getContext("webgl2");
+var lenPerRow = 6;
 if (!gl) {
     // Fall back to WebGL 1.0 if WebGL 2.0 is not available
     gl = canvas.getContext("webgl");
@@ -72,6 +73,7 @@ gl.depthMask(true);
 // 
 // main render loop
 // 
+var i = 0;
 function frame() {
     // set canvas size
     canvas.width = document.body.clientWidth;
@@ -81,19 +83,33 @@ function frame() {
     // clear screen
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var lenPerRow = 6;
-    triangleVerticies = new Float32Array([
-        0.3, 0.5, -0.5,        1, 1, 0,
-        -0.5, 0, 0,         1, 1, 0,
-        0.3, -0.5, 0.5,       1, 1, 0,
-        -0.3, 0.5, 0.5,       1, 0, 1,
-        0.5, 0, 0,          1, 0, 1,
-        -0.3, -0.5, -0.5,      1, 0, 1,
+    // main
+    var triangleVerticies = [
+        -0.05, 0.1, 0,     1, 1, 0,
+        0.05, 0.1, 0,     1, 1, 0,
+        0, 0, 0,     1, 1, 0,
+    ];
+    var fov = 120;
+    var fovVertical = Math.floor(fov*(canvas.height/canvas.width));
+    var camAngle = 0;
+
+    camAngle = i;
+    var rotatedCoords = calcRotatedCoord2D(camAngle, [0.3, 0.5]);
+    var x = rotatedCoords[0];
+    var y = rotatedCoords[1];
+    triangleVerticies = triangleVerticies.concat([
+        x-0.05, y+0.1, 0,     1, 1, 0,
+        x+0.05, y+0.1, 0,     1, 1, 0,
+        x, y, 0,     1, 1, 0,
     ]);
+    i+=5;
+
+    // update variables
+    var triangleVerticies32 = new Float32Array(triangleVerticies);
 
     var triangleVertexBufferObject = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies32, gl.STATIC_DRAW);
     
     const positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
     const colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
@@ -118,7 +134,7 @@ function frame() {
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(colorAttribLocation);
 
-    gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies.length / lenPerRow);
+    gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies32.length / lenPerRow);
 
     // loop
     requestAnimationFrame(frame);
