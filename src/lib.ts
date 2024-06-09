@@ -27,14 +27,11 @@ function calcRotatedCoord2D(camAngle:number, coords: [number, number]): [number,
 }
 
 function projecting3D(fov:number, screenSize:[number, number], renderingRange:number, coords:[number, number, number]):[number, number, number] {
-    // var fovVertical = Math.floor((screenSize[1]/screenSize[0])*fov);
     var fovVertical = fov;
     var [x, y, z] = coords;
-    z = z+5;
     console.log(atan(x/z));
     x = atan(x / z) / fov*2;
     y = atan(y / z) / fov*2;
     [x, y, z] = [x, y, z/renderingRange];
-    // console.log(x,y,z);
     return [x, y, z];
 }
