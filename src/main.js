@@ -23,6 +23,49 @@ void main() {
 `;
 
 
+// load stuff
+var map = [
+    1, 1, 1,
+    1, 1, 3,
+    1, -1, 3,
+
+    1, 1, 1,
+    1, -1, 1,
+    1, -1, 3,
+
+    -1, 1, 1,
+    -1, 1, 3,
+    -1, -1, 3,
+
+    -1, 1, 1,
+    -1, -1, 1,
+    -1, -1, 3,
+    
+    1, 1, 1,
+    1, 1, 3,
+    -1, 1, 3,
+
+    1, 1, 1,
+    -1, 1, 1,
+    -1, 1, 3,
+
+    1, -1, 1,
+    1, -1, 3,
+    -1, -1, 3,
+
+    1, -1, 1,
+    -1, -1, 1,
+    -1, -1, 3,
+
+    1, 1, 3,
+    1, -1, 3,
+    -1, -1, 3,
+
+    1, 1, 3,
+    -1, 1, 3,
+    -1, -1, 3,
+];
+
 // init
 var canvas = document.getElementById("canvas");
 var gl = canvas.getContext("webgl2");
@@ -73,7 +116,9 @@ gl.depthMask(true);
 // 
 // main render loop
 // 
-var i = 0;
+var fov = 120;
+var renderingRange = 10;
+var camPos = [0, 0, 0];
 function frame() {
     // set canvas size
     canvas.width = document.body.clientWidth;
@@ -84,27 +129,27 @@ function frame() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // main
-    var triangleVerticies = [
-        -0.05, 0.1, 0,     1, 1, 0,
-        0.05, 0.1, 0,     1, 1, 0,
-        0, 0, 0,     1, 1, 0,
-    ];
+    var triangleVerticies = [];
     var lineVerticies = [];
     var camAngle = 0;
+    var lineLength = 3;
 
-    camAngle = i;
-    var rotatedCoords = calcRotatedCoord2D(camAngle, [0.3, 0.5]);
-    var x = rotatedCoords[0];
-    var y = rotatedCoords[1];
-    lineVerticies = lineVerticies.concat([
-        x-0.05, y+0.1, 0,     1, 1, 0,
-        x+0.05, y+0.1, 0,     1, 1, 0,
-        x+0.05, y+0.1, 0,     1, 1, 0,
-        x, y, 0,     1, 1, 0,
-        x, y, 0,     1, 1, 0,
-        x-0.05, y+0.1, 0,     1, 1, 0,
-    ]);
-    i+=5;
+    // loop through all triangles
+    for (let i = 0; i < map.length; i += lineLength*3) {
+        // per triangle
+        var vertices = [];
+        for (let j = i; j < i+lineLength*3; j += lineLength) {
+            // per vertex
+            vertices.push(projecting3D(fov, [canvas.width, canvas.height], renderingRange, map.slice(j, j+lineLength)).concat([1, 1, 0]));
+        }
+        lineVerticies = lineVerticies
+            .concat(vertices[0])
+            .concat(vertices[1])
+            .concat(vertices[1])
+            .concat(vertices[2])
+            .concat(vertices[2])
+            .concat(vertices[0]);
+    }
 
     // draw triangles
     var triangleVerticies32 = new Float32Array(triangleVerticies);
