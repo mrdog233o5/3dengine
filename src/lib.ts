@@ -19,6 +19,7 @@ function calcRotatedCoord2D(camAngle:number, coords: [number, number]): [number,
     var originalY = coords[1];
     var relAngle = atan(originalX/originalY);
     var angle = camAngle + relAngle;
+    if (coords[1] < 0) angle += 180;
     var distance = Math.sqrt(originalX**2 + originalY**2);
 
     var x = (sin(angle) * distance);
