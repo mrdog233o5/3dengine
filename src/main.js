@@ -60,7 +60,7 @@ function frame() {
             c[1] += rotated[1];
             vertices.push(projecting3D(DoggyGraphicsEngine.fov, [canvas.width, canvas.height], DoggyGraphicsEngine.renderingRange, c).concat([1, 1, 0]));
         }
-        DoggyGraphicsEngine.lineVerticies = DoggyGraphicsEngine.lineVerticies
+        DoggyGraphicsEngine.lineVertices = DoggyGraphicsEngine.lineVertices
             .concat(vertices[0])
             .concat(vertices[1])
             .concat(vertices[1])

@@ -75,8 +75,8 @@ const DoggyGraphicsEngine = new class {
     renderingRange = 10;
     camPos = [0, 0, 0];
     loops = 0;
-    triangleVerticies: number[] = [];
-    lineVerticies: number[] = [];
+    triangleVertices: number[] = [];
+    lineVertices: number[] = [];
     constructor() {
         this.renderingFrame = this.renderingFrame.bind(this);
     }
@@ -91,18 +91,18 @@ const DoggyGraphicsEngine = new class {
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         // reset
-        this.triangleVerticies = [];
-        this.lineVerticies = [];
+        this.triangleVertices = [];
+        this.lineVertices = [];
 
         // run frame function
         frame();
 
         // draw triangles
-        var triangleVerticies32 = new Float32Array(this.triangleVerticies);
+        var triangleVertices32 = new Float32Array(this.triangleVertices);
 
         var triangleVertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies32, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, triangleVertices32, gl.STATIC_DRAW);
         
         var positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
         var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
@@ -127,14 +127,14 @@ const DoggyGraphicsEngine = new class {
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
 
-        gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies32.length / lenPerRow);
+        gl.drawArrays(gl.TRIANGLES, 0, triangleVertices32.length / lenPerRow);
 
         // draw LINES
-        var lineVerticies32 = new Float32Array(this.lineVerticies);
+        var lineVertices32 = new Float32Array(this.lineVertices);
 
         var lineVertexBufferObject = gl.createBuffer();
         gl.bindBuffer(gl.ARRAY_BUFFER, lineVertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, lineVerticies32, gl.STATIC_DRAW);
+        gl.bufferData(gl.ARRAY_BUFFER, lineVertices32, gl.STATIC_DRAW);
         
         positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
         colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
@@ -158,7 +158,7 @@ const DoggyGraphicsEngine = new class {
         
         gl.enableVertexAttribArray(positionAttribLocation);
         gl.enableVertexAttribArray(colorAttribLocation);
-        gl.drawArrays(gl.LINES, 0, lineVerticies32.length / lenPerRow);
+        gl.drawArrays(gl.LINES, 0, lineVertices32.length / lenPerRow);
         gl.flush();
 
         // loop
