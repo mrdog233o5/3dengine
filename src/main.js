@@ -116,9 +116,10 @@ gl.depthMask(true);
 // 
 // main render loop
 // 
-var fov = 120;
+var fov = 90;
 var renderingRange = 10;
 var camPos = [0, 0, 0];
+var temp = 0;
 function frame() {
     // set canvas size
     canvas.width = document.body.clientWidth;
@@ -140,7 +141,12 @@ function frame() {
         var vertices = [];
         for (let j = i; j < i+lineLength*3; j += lineLength) {
             // per vertex
-            vertices.push(projecting3D(fov, [canvas.width, canvas.height], renderingRange, map.slice(j, j+lineLength)).concat([1, 1, 0]));
+            var c = map.slice(j, j+lineLength);
+            var rotated = calcRotatedCoord2D(temp, [0, 1]);
+            c[0] += rotated[0];
+            c[1] += rotated[1];
+            // asd
+            vertices.push(projecting3D(fov, [canvas.width, canvas.height], renderingRange, c).concat([1, 1, 0]));
         }
         lineVerticies = lineVerticies
             .concat(vertices[0])
@@ -150,6 +156,7 @@ function frame() {
             .concat(vertices[2])
             .concat(vertices[0]);
     }
+    temp += 2;
 
     // draw triangles
     var triangleVerticies32 = new Float32Array(triangleVerticies);
