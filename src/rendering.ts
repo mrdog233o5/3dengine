@@ -22,49 +22,6 @@ void main() {
 }
 `;
 
-// load stuff
-var map = [
-    1, 1, 1,
-    1, 1, 3,
-    1, -1, 3,
-
-    1, 1, 1,
-    1, -1, 1,
-    1, -1, 3,
-
-    -1, 1, 1,
-    -1, 1, 3,
-    -1, -1, 3,
-
-    -1, 1, 1,
-    -1, -1, 1,
-    -1, -1, 3,
-    
-    1, 1, 1,
-    1, 1, 3,
-    -1, 1, 3,
-
-    1, 1, 1,
-    -1, 1, 1,
-    -1, 1, 3,
-
-    1, -1, 1,
-    1, -1, 3,
-    -1, -1, 3,
-
-    1, -1, 1,
-    -1, -1, 1,
-    -1, -1, 3,
-
-    1, 1, 3,
-    1, -1, 3,
-    -1, -1, 3,
-
-    1, 1, 3,
-    -1, 1, 3,
-    -1, -1, 3,
-];
-
 // init
 var canvas = document.getElementById("canvas") as HTMLCanvasElement;
 var gl: WebGL2RenderingContext = canvas.getContext("webgl2") as WebGL2RenderingContext;
@@ -79,8 +36,6 @@ if (!gl) {
 } else {
     console.log("Using WebGL 2.0");
 }
-
-gl.clearColor(0, 0, 0, 1);
 
 var vertexShader: WebGLShader = gl.createShader(gl.VERTEX_SHADER) as WebGLShader;
 var fragmentShader: WebGLShader = gl.createShader(gl.FRAGMENT_SHADER) as WebGLShader;
@@ -115,112 +70,102 @@ gl.depthMask(true);
 // 
 // main render loop
 // 
-var fov = 90;
-var renderingRange = 10;
-var camPos = [0, 0, 0];
-var temp = 0;
-function frame() {
-    // set canvas size
-    canvas.width = document.body.clientWidth;
-    canvas.height = document.body.clientHeight;
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
-    // clear screen
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    // main
-    var triangleVerticies: number[] = [];
-    var lineVerticies: number[] = [];
-    var camAngle = 0;
-    var lineLength = 3;
-
-    // loop through all triangles
-    for (let i = 0; i < map.length; i += lineLength*3) {
-        // per triangle
-        var vertices: number[][] = [];
-        for (let j = i; j < i+lineLength*3; j += lineLength) {
-            // per vertex
-            var c: [number, number, number] = map.slice(j, j+lineLength) as [number, number, number];
-            var rotated = calcRotatedCoord2D(temp, [0, 1]);
-            c[0] += rotated[0];
-            c[1] += rotated[1];
-            vertices.push(projecting3D(fov, [canvas.width, canvas.height], renderingRange, c).concat([1, 1, 0]));
-        }
-        lineVerticies = lineVerticies
-            .concat(vertices[0])
-            .concat(vertices[1])
-            .concat(vertices[1])
-            .concat(vertices[2])
-            .concat(vertices[2])
-            .concat(vertices[0]);
+const DoggyGraphicsEngine = new class {
+    fov = 90;
+    renderingRange = 10;
+    camPos = [0, 0, 0];
+    loops = 0;
+    triangleVerticies: number[] = [];
+    lineVerticies: number[] = [];
+    constructor() {
+        this.renderingFrame = this.renderingFrame.bind(this);
     }
-    temp += 2;
+    renderingFrame() {
+        // set canvas size
+        canvas.width = document.body.clientWidth;
+        canvas.height = document.body.clientHeight;
+        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-    // draw triangles
-    var triangleVerticies32 = new Float32Array(triangleVerticies);
+        // clear screen
+        gl.clearColor(0, 0, 0, 1);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    var triangleVertexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies32, gl.STATIC_DRAW);
-    
-    var positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
-    var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
-    
-    gl.vertexAttribPointer(
-        positionAttribLocation,
-        3,
-        gl.FLOAT,
-        false,
-        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
-        0
-    );
-    gl.vertexAttribPointer(
-        colorAttribLocation,
-        3,
-        gl.FLOAT,
-        false,
-        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
-        3 * Float32Array.BYTES_PER_ELEMENT
-    );
-    
-    gl.enableVertexAttribArray(positionAttribLocation);
-    gl.enableVertexAttribArray(colorAttribLocation);
+        // reset
+        this.triangleVerticies = [];
+        this.lineVerticies = [];
 
-    gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies32.length / lenPerRow);
+        // run frame function
+        frame();
 
-    // draw LINES
-    var lineVerticies32 = new Float32Array(lineVerticies);
+        // draw triangles
+        var triangleVerticies32 = new Float32Array(this.triangleVerticies);
 
-    var lineVertexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, lineVertexBufferObject);
-    gl.bufferData(gl.ARRAY_BUFFER, lineVerticies32, gl.STATIC_DRAW);
-    
-    positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
-    colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
-    
-    gl.vertexAttribPointer(
-        positionAttribLocation,
-        3,
-        gl.FLOAT,
-        false,
-        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
-        0
-    );
-    gl.vertexAttribPointer(
-        colorAttribLocation,
-        3,
-        gl.FLOAT,
-        false,
-        lenPerRow * Float32Array.BYTES_PER_ELEMENT,
-        3 * Float32Array.BYTES_PER_ELEMENT
-    );
-    
-    gl.enableVertexAttribArray(positionAttribLocation);
-    gl.enableVertexAttribArray(colorAttribLocation);
-    gl.drawArrays(gl.LINES, 0, lineVerticies32.length / lenPerRow);
-    gl.flush();
+        var triangleVertexBufferObject = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
+        gl.bufferData(gl.ARRAY_BUFFER, triangleVerticies32, gl.STATIC_DRAW);
+        
+        var positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
+        var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+        
+        gl.vertexAttribPointer(
+            positionAttribLocation,
+            3,
+            gl.FLOAT,
+            false,
+            lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+            0
+        );
+        gl.vertexAttribPointer(
+            colorAttribLocation,
+            3,
+            gl.FLOAT,
+            false,
+            lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+            3 * Float32Array.BYTES_PER_ELEMENT
+        );
+        
+        gl.enableVertexAttribArray(positionAttribLocation);
+        gl.enableVertexAttribArray(colorAttribLocation);
 
-    // loop
-    requestAnimationFrame(frame);
+        gl.drawArrays(gl.TRIANGLES, 0, triangleVerticies32.length / lenPerRow);
+
+        // draw LINES
+        var lineVerticies32 = new Float32Array(this.lineVerticies);
+
+        var lineVertexBufferObject = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, lineVertexBufferObject);
+        gl.bufferData(gl.ARRAY_BUFFER, lineVerticies32, gl.STATIC_DRAW);
+        
+        positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
+        colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+        
+        gl.vertexAttribPointer(
+            positionAttribLocation,
+            3,
+            gl.FLOAT,
+            false,
+            lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+            0
+        );
+        gl.vertexAttribPointer(
+            colorAttribLocation,
+            3,
+            gl.FLOAT,
+            false,
+            lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+            3 * Float32Array.BYTES_PER_ELEMENT
+        );
+        
+        gl.enableVertexAttribArray(positionAttribLocation);
+        gl.enableVertexAttribArray(colorAttribLocation);
+        gl.drawArrays(gl.LINES, 0, lineVerticies32.length / lenPerRow);
+        gl.flush();
+
+        // loop
+        this.loops ++;
+        window.requestAnimationFrame(this.renderingFrame);
+    }
 }
-frame();
+
+start();
+DoggyGraphicsEngine.renderingFrame();
