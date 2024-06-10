@@ -71,16 +71,21 @@ gl.depthMask(true);
 // main render loop
 // 
 const DoggyGraphicsEngine = new class {
-    fov = 90;
-    renderingRange = 10;
-    camPos = [0, 0, 0];
-    loops = 0;
-    triangleVertices: number[] = [];
-    lineVertices: number[] = [];
     constructor() {
         this.renderingFrame = this.renderingFrame.bind(this);
     }
-    renderingFrame() {
+    fov:number = 90;
+    renderingRange:number = 10;
+    camPos:[number,number,number] = [0, 0, 0];
+    loops:number = 0;
+    triangleVertices:number[] = [];
+    lineVertices:number[] = [];
+
+    // special functions
+    start: () => void | undefined;
+    frame: () => void | undefined;
+
+    renderingFrame = ():void => {
         // set canvas size
         canvas.width = document.body.clientWidth;
         canvas.height = document.body.clientHeight;
@@ -95,7 +100,7 @@ const DoggyGraphicsEngine = new class {
         this.lineVertices = [];
 
         // run frame function
-        frame();
+        if (this.frame != undefined) this.frame();
 
         // draw triangles
         var triangleVertices32 = new Float32Array(this.triangleVertices);
@@ -165,7 +170,27 @@ const DoggyGraphicsEngine = new class {
         this.loops ++;
         window.requestAnimationFrame(this.renderingFrame);
     }
+    projecting3D = (fov:number, screenSize:[number, number], renderingRange:number, coords:[number, number, number]):[number, number, number] => {
+        var fovVertical = fov;
+        var [x, y, z] = coords;
+        x = x / z / (Math.tan((Math.PI/180)*fov / 2));
+        y = y / z / (Math.tan((Math.PI/180)*fovVertical / 2));
+        z = z/renderingRange;
+        return [x, y, z];
+    }
+    calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {
+        var originalX = coords[0];
+        var originalY = coords[1];
+        var relAngle = Math.atan(originalX/originalY) * ( 180 / Math.PI );
+        var angle = camAngle + relAngle;
+        if (coords[1] < 0) angle += 180;
+        var distance = Math.sqrt(originalX**2 + originalY**2);
+    
+        var x = (Math.sin((Math.PI/180)*angle) * distance);
+        var y = (Math.cos((Math.PI/180)*angle) * distance);
+        return [x, y];
+    }
 }
 
-start();
+export default DoggyGraphicsEngine;
 DoggyGraphicsEngine.renderingFrame();
