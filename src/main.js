@@ -1,4 +1,4 @@
-import DoggyGraphicsEngine from "/src/rendering.ts";
+// import DoggyGraphicsEngine from "/src/rendering.ts";
 
 // load stuff
 var map = [
@@ -43,6 +43,9 @@ var map = [
     -1, -1, 3,
 ];
 
+DoggyGraphicsEngine.canvas = document.getElementById("canvas");
+DoggyGraphicsEngine.init();
+
 DoggyGraphicsEngine.frame = () => {
     var camAngle = 0;
     var lineLength = 3;
@@ -68,3 +71,4 @@ DoggyGraphicsEngine.frame = () => {
             .concat(vertices[0]);
     }
 }
+DoggyGraphicsEngine.renderingFrame();

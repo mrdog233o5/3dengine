@@ -1,4 +1,4 @@
-var vertexShaderText = String.raw`#version 300 es
+const vertexShaderText = String.raw`#version 300 es
 precision highp float;
 
 in vec3 vertPos;
@@ -11,7 +11,7 @@ void main() {
 }
 `;
 
-var fragmentShaderText = String.raw`#version 300 es
+const fragmentShaderText = String.raw`#version 300 es
 precision highp float;
 
 in vec3 fragColor;
@@ -22,54 +22,16 @@ void main() {
 }
 `;
 
-// init
-var canvas = document.getElementById("canvas") as HTMLCanvasElement;
-var gl: WebGL2RenderingContext = canvas.getContext("webgl2") as WebGL2RenderingContext;
-var lenPerRow = 6;
-if (!gl) {
-    // Fall back to WebGL 1.0 if WebGL 2.0 is not available
-    // gl = canvas.getContext("webgl") ?? WebGL2RenderingContext;
-    if (!gl) {
-        console.error("WebGL is not supported in this browser.");
-    }
-    console.log("Using WebGL 1.0");
-} else {
-    console.log("Using WebGL 2.0");
-}
-
-var vertexShader: WebGLShader = gl.createShader(gl.VERTEX_SHADER) as WebGLShader;
-var fragmentShader: WebGLShader = gl.createShader(gl.FRAGMENT_SHADER) as WebGLShader;
-
-gl.shaderSource(vertexShader, vertexShaderText);
-gl.shaderSource(fragmentShader, fragmentShaderText);
-
-gl.compileShader(vertexShader);
-if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-    console.error("Couldn't compile vertex shader:", gl.getShaderInfoLog(vertexShader));
-}
-gl.compileShader(fragmentShader);
-if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-    console.error("Couldn't compile fragment shader:", gl.getShaderInfoLog(fragmentShader));
-}
-
-var program: WebGLProgram = gl.createProgram() as WebGLProgram;
-gl.attachShader(program, vertexShader);
-gl.attachShader(program, fragmentShader);
-gl.linkProgram(program);
-
-gl.useProgram(program);
-
-// 
-// stuff
-// 
-
-gl.enable(gl.DEPTH_TEST);
-gl.depthFunc(gl.LESS);
-gl.depthMask(true);
+const lenPerRow = 6;
 
 // 
 // main render loop
 // 
+
+function isNotNullOrUndefined<T>(value: T): value is NonNullable<T> {
+    return value !== null && value !== undefined;
+}
+
 const DoggyGraphicsEngine = new class {
     constructor() {
         this.renderingFrame = this.renderingFrame.bind(this);
@@ -80,20 +42,65 @@ const DoggyGraphicsEngine = new class {
     loops:number = 0;
     triangleVertices:number[] = [];
     lineVertices:number[] = [];
+    
 
-    // special functions
-    start: () => void | undefined;
-    frame: () => void | undefined;
+    // blanks variables
+    gl: WebGL2RenderingContext | null;
+    canvas: HTMLCanvasElement | null;
+    program: WebGLProgram;
+    start: () => void | null;
+    frame: () => void | null;
 
+    init = (): void => {
+        if (this.canvas == undefined) return;
+        this.gl = this.canvas.getContext("webgl2") as WebGL2RenderingContext | null;
+        if (!this.gl) {
+            // Fall back to WebGL 1.0 if WebGL 2.0 is not available
+            this.gl = this.canvas.getContext("webgl") as WebGL2RenderingContext | null;
+            if (!this.gl) {
+                console.error("WebGL is not supported in this browser.");
+            }
+            console.log("Using WebGL 1.0");
+        } else {
+            console.log("Using WebGL 2.0");
+        }
+
+        var vertexShader: WebGLShader = this.gl!.createShader(this.gl!.VERTEX_SHADER) as WebGLShader;
+        var fragmentShader: WebGLShader = this.gl!.createShader(this.gl!.FRAGMENT_SHADER) as WebGLShader;
+
+        this.gl!.shaderSource(vertexShader, vertexShaderText);
+        this.gl!.shaderSource(fragmentShader, fragmentShaderText);
+
+        this.gl!.compileShader(vertexShader);
+        if (!this.gl!.getShaderParameter(vertexShader, this.gl!.COMPILE_STATUS)) {
+            console.error("Couldn't compile vertex shader:", this.gl!.getShaderInfoLog(vertexShader));
+        }
+        this.gl!.compileShader(fragmentShader);
+        if (!this.gl!.getShaderParameter(fragmentShader, this.gl!.COMPILE_STATUS)) {
+            console.error("Couldn't compile fragment shader:", this.gl!.getShaderInfoLog(fragmentShader));
+        }
+
+        this.program = this.gl!.createProgram() as WebGLProgram;
+        
+        this.gl!.attachShader(this.program, vertexShader);
+        this.gl!.attachShader(this.program, fragmentShader);
+        this.gl!.linkProgram(this.program);
+
+        this.gl!.useProgram(this.program);
+
+        this.gl!.enable(this.gl!.DEPTH_TEST);
+        this.gl!.depthFunc(this.gl!.LESS);
+        this.gl!.depthMask(true);
+    }
     renderingFrame = ():void => {
         // set canvas size
-        canvas.width = document.body.clientWidth;
-        canvas.height = document.body.clientHeight;
-        gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+        this.canvas!.width = document.body.clientWidth;
+        this.canvas!.height = document.body.clientHeight;
+        this.gl!.viewport(0, 0, this.gl!.canvas.width, this.gl!.canvas.height);
 
         // clear screen
-        gl.clearColor(0, 0, 0, 1);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+        this.gl!.clearColor(0, 0, 0, 1);
+        this.gl!.clear(this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT);
 
         // reset
         this.triangleVertices = [];
@@ -105,66 +112,66 @@ const DoggyGraphicsEngine = new class {
         // draw triangles
         var triangleVertices32 = new Float32Array(this.triangleVertices);
 
-        var triangleVertexBufferObject = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, triangleVertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, triangleVertices32, gl.STATIC_DRAW);
+        var triangleVertexBufferObject = this.gl!.createBuffer();
+        this.gl!.bindBuffer(this.gl!.ARRAY_BUFFER, triangleVertexBufferObject);
+        this.gl!.bufferData(this.gl!.ARRAY_BUFFER, triangleVertices32, this.gl!.STATIC_DRAW);
         
-        var positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
-        var colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+        var positionAttribLocation = this.gl!.getAttribLocation(this.program, 'vertPos');
+        var colorAttribLocation = this.gl!.getAttribLocation(this.program, 'vertColor');
         
-        gl.vertexAttribPointer(
+        this.gl!.vertexAttribPointer(
             positionAttribLocation,
             3,
-            gl.FLOAT,
+            this.gl!.FLOAT,
             false,
             lenPerRow * Float32Array.BYTES_PER_ELEMENT,
             0
         );
-        gl.vertexAttribPointer(
+        this.gl!.vertexAttribPointer(
             colorAttribLocation,
             3,
-            gl.FLOAT,
+            this.gl!.FLOAT,
             false,
             lenPerRow * Float32Array.BYTES_PER_ELEMENT,
             3 * Float32Array.BYTES_PER_ELEMENT
         );
         
-        gl.enableVertexAttribArray(positionAttribLocation);
-        gl.enableVertexAttribArray(colorAttribLocation);
+        this.gl!.enableVertexAttribArray(positionAttribLocation);
+        this.gl!.enableVertexAttribArray(colorAttribLocation);
 
-        gl.drawArrays(gl.TRIANGLES, 0, triangleVertices32.length / lenPerRow);
+        this.gl!.drawArrays(this.gl!.TRIANGLES, 0, triangleVertices32.length / lenPerRow);
 
         // draw LINES
         var lineVertices32 = new Float32Array(this.lineVertices);
 
-        var lineVertexBufferObject = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, lineVertexBufferObject);
-        gl.bufferData(gl.ARRAY_BUFFER, lineVertices32, gl.STATIC_DRAW);
+        var lineVertexBufferObject = this.gl!.createBuffer();
+        this.gl!.bindBuffer(this.gl!.ARRAY_BUFFER, lineVertexBufferObject);
+        this.gl!.bufferData(this.gl!.ARRAY_BUFFER, lineVertices32, this.gl!.STATIC_DRAW);
         
-        positionAttribLocation = gl.getAttribLocation(program, 'vertPos');
-        colorAttribLocation = gl.getAttribLocation(program, 'vertColor');
+        positionAttribLocation = this.gl!.getAttribLocation(this.program, 'vertPos');
+        colorAttribLocation = this.gl!.getAttribLocation(this.program, 'vertColor');
         
-        gl.vertexAttribPointer(
+        this.gl!.vertexAttribPointer(
             positionAttribLocation,
             3,
-            gl.FLOAT,
+            this.gl!.FLOAT,
             false,
             lenPerRow * Float32Array.BYTES_PER_ELEMENT,
             0
         );
-        gl.vertexAttribPointer(
+        this.gl!.vertexAttribPointer(
             colorAttribLocation,
             3,
-            gl.FLOAT,
+            this.gl!.FLOAT,
             false,
             lenPerRow * Float32Array.BYTES_PER_ELEMENT,
             3 * Float32Array.BYTES_PER_ELEMENT
         );
         
-        gl.enableVertexAttribArray(positionAttribLocation);
-        gl.enableVertexAttribArray(colorAttribLocation);
-        gl.drawArrays(gl.LINES, 0, lineVertices32.length / lenPerRow);
-        gl.flush();
+        this.gl!.enableVertexAttribArray(positionAttribLocation);
+        this.gl!.enableVertexAttribArray(colorAttribLocation);
+        this.gl!.drawArrays(this.gl!.LINES, 0, lineVertices32.length / lenPerRow);
+        this.gl!.flush();
 
         // loop
         this.loops ++;
@@ -192,5 +199,4 @@ const DoggyGraphicsEngine = new class {
     }
 }
 
-export default DoggyGraphicsEngine;
-DoggyGraphicsEngine.renderingFrame();
+// export default DoggyGraphicsEngine;
