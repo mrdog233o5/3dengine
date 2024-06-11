@@ -43,10 +43,9 @@ var map = [
     -1, -1, 3,
 ];
 
-DoggyGraphicsEngine.canvas = document.getElementById("canvas");
-DoggyGraphicsEngine.init();
+const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
 
-DoggyGraphicsEngine.frame = () => {
+canvas1.frame = () => {
     var camAngle = 0;
     var lineLength = 3;
 	
@@ -57,12 +56,12 @@ DoggyGraphicsEngine.frame = () => {
         for (let j = i; j < i+lineLength*3; j += lineLength) {
             // per vertex
             var c = map.slice(j, j+lineLength);
-            var rotated = DoggyGraphicsEngine.calcRotatedCoord2D(DoggyGraphicsEngine.loops, [0, 1]);
+            var rotated = canvas1.calcRotatedCoord2D(canvas1.loops*2, [0, 0.5]);
             c[0] += rotated[0];
             c[1] += rotated[1];
-            vertices.push(DoggyGraphicsEngine.projecting3D(DoggyGraphicsEngine.fov, [canvas.width, canvas.height], DoggyGraphicsEngine.renderingRange, c).concat([1, 1, 0]));
+            vertices.push(canvas1.projecting3D(canvas1.fov, [canvas.width, canvas.height], canvas1.renderingRange, c).concat([1, 1, 0]));
         }
-        DoggyGraphicsEngine.lineVertices = DoggyGraphicsEngine.lineVertices
+        canvas1.lineVertices = canvas1.lineVertices
             .concat(vertices[0])
             .concat(vertices[1])
             .concat(vertices[1])
@@ -71,4 +70,4 @@ DoggyGraphicsEngine.frame = () => {
             .concat(vertices[0]);
     }
 }
-DoggyGraphicsEngine.renderingFrame();
+canvas1.renderingFrame();

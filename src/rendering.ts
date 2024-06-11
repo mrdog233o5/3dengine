@@ -32,26 +32,15 @@ function isNotNullOrUndefined<T>(value: T): value is NonNullable<T> {
     return value !== null && value !== undefined;
 }
 
-const DoggyGraphicsEngine = new class {
-    constructor() {
+const DoggyGraphicsEngine = class {
+    constructor(canvas: HTMLCanvasElement) {
+        // set stuff
+        this.canvas = canvas;
+
+        // bind stuff
         this.renderingFrame = this.renderingFrame.bind(this);
-    }
-    fov:number = 90;
-    renderingRange:number = 10;
-    camPos:[number,number,number] = [0, 0, 0];
-    loops:number = 0;
-    triangleVertices:number[] = [];
-    lineVertices:number[] = [];
-    
 
-    // blanks variables
-    gl: WebGL2RenderingContext | null;
-    canvas: HTMLCanvasElement | null;
-    program: WebGLProgram;
-    start: () => void | null;
-    frame: () => void | null;
-
-    init = (): void => {
+        // initialize webgl
         if (this.canvas == undefined) return;
         this.gl = this.canvas.getContext("webgl2") as WebGL2RenderingContext | null;
         if (!this.gl) {
@@ -92,6 +81,20 @@ const DoggyGraphicsEngine = new class {
         this.gl!.depthFunc(this.gl!.LESS);
         this.gl!.depthMask(true);
     }
+    fov:number = 90;
+    renderingRange:number = 10;
+    camPos:[number,number,number] = [0, 0, 0];
+    loops:number = 0;
+    triangleVertices:number[] = [];
+    lineVertices:number[] = [];
+    canvas: HTMLCanvasElement | null;
+    gl: WebGL2RenderingContext | null;
+    program: WebGLProgram;
+    
+    // blanks variables
+    start: () => void | null;
+    frame: () => void | null;
+    
     renderingFrame = ():void => {
         // set canvas size
         this.canvas!.width = document.body.clientWidth;
