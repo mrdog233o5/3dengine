@@ -189,15 +189,9 @@ const DoggyGraphicsEngine = class {
         return [x, y, z];
     }
     calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {
-        var originalX = coords[0];
-        var originalY = coords[1];
-        var relAngle = Math.atan(originalX/originalY) * ( 180 / Math.PI );
-        var angle = camAngle + relAngle;
-        if (coords[1] < 0) angle += 180;
-        var distance = Math.sqrt(originalX**2 + originalY**2);
-    
-        var x = (Math.sin((Math.PI/180)*angle) * distance);
-        var y = (Math.cos((Math.PI/180)*angle) * distance);
+        var [x, y] = coords;
+        x = (coords[0] * Math.cos(camAngle * (Math.PI/180))) - (coords[1] * Math.sin(camAngle * (Math.PI/180)));
+        y = (coords[0] * Math.sin(camAngle * (Math.PI/180))) + (coords[1] * Math.cos(camAngle * (Math.PI/180)));
         return [x, y];
     }
 }
