@@ -55,9 +55,12 @@ canvas1.frame = () => {
         for (let j = i; j < i+lineLength*3; j += lineLength) {
             // per vertex
             var c = map.slice(j, j+lineLength);
-            var rotated = canvas1.calcRotatedCoord2D(canvas1.loops*2, [0, 0.5]);
-            c[0] += rotated[0];
-            c[1] += rotated[1];
+            c[2] -= 2;
+            var rotated = canvas1.calcRotatedCoord3D([canvas1.loops, canvas1.loops], c);
+            c[0] = rotated[0];
+            c[1] = rotated[1];
+            c[2] = rotated[2];
+            c[2] += 5;
             vertices.push(canvas1.projecting3D(canvas1.fov, [canvas.width, canvas.height], canvas1.renderingRange, c).concat(map.slice(j+3, j+lineLength)));
         }
         canvas1.triangleVertices = canvas1.triangleVertices

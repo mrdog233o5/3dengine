@@ -185,7 +185,7 @@ const DoggyGraphicsEngine = class {
         var [x, y, z] = coords;
         x = x / z / (Math.tan((Math.PI/180)*fov / 2));
         y = y / z / (Math.tan((Math.PI/180)*fovVertical / 2));
-        z = z/renderingRange;
+        z = (z/renderingRange*2)-1;
         return [x, y, z];
     }
     calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {
@@ -193,6 +193,12 @@ const DoggyGraphicsEngine = class {
         x = (coords[0] * Math.cos(camAngle * (Math.PI/180))) - (coords[1] * Math.sin(camAngle * (Math.PI/180)));
         y = (coords[0] * Math.sin(camAngle * (Math.PI/180))) + (coords[1] * Math.cos(camAngle * (Math.PI/180)));
         return [x, y];
+    }
+    calcRotatedCoord3D = (camAngle:[number, number], coords: [number, number, number]):[number, number, number] => {
+        var [x, y, z] = coords;
+        [y, z] = this.calcRotatedCoord2D(camAngle[0], [y, z]);
+        [x, z] = this.calcRotatedCoord2D(camAngle[1], [x, z]);
+        return [x, y, z];
     }
 }
 
