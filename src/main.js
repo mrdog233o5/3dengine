@@ -76,7 +76,6 @@ document.addEventListener('mousemove', (event) => {
         (y/canvas1.screenSize[1]*canvas1.fov)-canvas1.fov/2,
         (-x/canvas1.screenSize[0]*canvas1.fov)+canvas1.fov/2
     ];
-    console.log(canvas1.camAngle);
 });
 
 canvas1.renderingFrame();
