@@ -82,8 +82,10 @@ const DoggyGraphicsEngine = class {
         this.gl!.depthMask(true);
     }
     fov:number = 90;
+    screenSize:[number, number] = [0, 0];
     zRange:[number,number] = [0.5, 10];
     camPos:[number,number,number] = [0, 0, 0];
+    camAngle:[number, number] = [0, 0];
     loops:number = 0;
     triangleVertices:number[] = [];
     lineVertices:number[] = [];
@@ -99,6 +101,7 @@ const DoggyGraphicsEngine = class {
         // set canvas size
         this.canvas!.width = document.body.clientWidth;
         this.canvas!.height = document.body.clientHeight;
+        this.screenSize = [this.canvas!.width, this.canvas!.height];
         this.gl!.viewport(0, 0, this.gl!.canvas.width, this.gl!.canvas.height);
 
         // clear screen

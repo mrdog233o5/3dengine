@@ -44,7 +44,7 @@ var map = [
 ];
 
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
-canvas1.fov = 60;
+canvas1.fov = 90;
 canvas1.frame = () => {
     var lineLength = 6;
 	
@@ -56,12 +56,12 @@ canvas1.frame = () => {
             // per vertex
             var c = map.slice(j, j+lineLength);
             c[2] -= 2;
-            var rotated = canvas1.calcRotatedCoord3D([canvas1.loops, canvas1.loops], c);
+            var rotated = canvas1.calcRotatedCoord3D(canvas1.camAngle, c);
             c[0] = rotated[0];
             c[1] = rotated[1];
             c[2] = rotated[2];
             c[2] += 5;
-            vertices.push(canvas1.projecting3D(canvas1.fov, [canvas.width, canvas.height], canvas1.zRange, c).concat(map.slice(j+3, j+lineLength)));
+            vertices.push(canvas1.projecting3D(canvas1.fov, canvas1.screenSize, canvas1.zRange, c).concat(map.slice(j+3, j+lineLength)));
         }
         canvas1.triangleVertices = canvas1.triangleVertices
             .concat(vertices[0])
@@ -69,4 +69,14 @@ canvas1.frame = () => {
             .concat(vertices[2]);
     }
 }
+document.addEventListener('mousemove', (event) => {
+    const x = event.clientX;
+    const y = event.clientY;
+    canvas1.camAngle = [
+        (y/canvas1.screenSize[1]*canvas1.fov)-canvas1.fov/2,
+        (-x/canvas1.screenSize[0]*canvas1.fov)+canvas1.fov/2
+    ];
+    console.log(canvas1.camAngle);
+});
+
 canvas1.renderingFrame();
