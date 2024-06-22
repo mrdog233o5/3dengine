@@ -82,7 +82,7 @@ const DoggyGraphicsEngine = class {
         this.gl!.depthMask(true);
     }
     fov:number = 90;
-    renderingRange:number = 10;
+    zRange:[number,number] = [0.5, 10];
     camPos:[number,number,number] = [0, 0, 0];
     loops:number = 0;
     triangleVertices:number[] = [];
@@ -180,12 +180,13 @@ const DoggyGraphicsEngine = class {
         this.loops ++;
         window.requestAnimationFrame(this.renderingFrame);
     }
-    projecting3D = (fov:number, screenSize:[number, number], renderingRange:number, coords:[number, number, number]):[number, number, number] => {
-        var fovVertical = fov;
+    projecting3D = (fov:number, screenSize:[number, number], zRange:[number, number], coords:[number, number, number]):[number, number, number] => {
+        var f = 1/(Math.tan((Math.PI/180)*fov / 2));
+        var a = screenSize[1]/screenSize[0];
         var [x, y, z] = coords;
-        x = x / z / (Math.tan((Math.PI/180)*fov / 2));
-        y = y / z / (Math.tan((Math.PI/180)*fovVertical / 2));
-        z = (z/renderingRange*2)-1;
+        y = y * f / Math.abs(z);
+        x = x * f / Math.abs(z) * a;
+        z = (z - zRange[0]) / (zRange[1] - zRange[0]) * 2 - 1;
         return [x, y, z];
     }
     calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {

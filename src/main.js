@@ -44,7 +44,7 @@ var map = [
 ];
 
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
-
+canvas1.fov = 60;
 canvas1.frame = () => {
     var lineLength = 6;
 	
@@ -61,7 +61,7 @@ canvas1.frame = () => {
             c[1] = rotated[1];
             c[2] = rotated[2];
             c[2] += 5;
-            vertices.push(canvas1.projecting3D(canvas1.fov, [canvas.width, canvas.height], canvas1.renderingRange, c).concat(map.slice(j+3, j+lineLength)));
+            vertices.push(canvas1.projecting3D(canvas1.fov, [canvas.width, canvas.height], canvas1.zRange, c).concat(map.slice(j+3, j+lineLength)));
         }
         canvas1.triangleVertices = canvas1.triangleVertices
             .concat(vertices[0])
