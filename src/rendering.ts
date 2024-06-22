@@ -96,6 +96,7 @@ const DoggyGraphicsEngine = class {
     zRange:[number,number] = [0.5, 10];
     camPos:[number,number,number] = [0, 0, 0];
     camAngle:[number, number] = [0, 0];
+    bgColor:[number, number, number, number] = [0,0,0,0];
     loops:number = 0;
     triangleVertices:number[] = [];
     lineVertices:number[] = [];
@@ -115,7 +116,7 @@ const DoggyGraphicsEngine = class {
         this.gl!.viewport(0, 0, this.gl!.canvas.width, this.gl!.canvas.height);
 
         // clear screen
-        this.gl!.clearColor(0, 0, 0, 1);
+        this.gl!.clearColor(this.bgColor[0],this.bgColor[1],this.bgColor[2],this.bgColor[3]);
         this.gl!.clear(this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT);
 
         // reset

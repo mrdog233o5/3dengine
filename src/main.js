@@ -46,6 +46,7 @@ var map = [
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
 canvas1.fov = 90;
 canvas1.frame = () => {
+    canvas1.bgColor = [(canvas1.loops/100)%1-0.3,(canvas1.loops/400)%1-0.3,(canvas1.loops/700)%1-0.3,1];
     var lineLength = 6;
 	
     // loop through all triangles
