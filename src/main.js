@@ -45,10 +45,11 @@ var map = [
 
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
 canvas1.fov = 90;
-canvas1.frame = () => {
-    canvas1.bgColor = [(canvas1.loops/100)%1-0.3,(canvas1.loops/400)%1-0.3,(canvas1.loops/700)%1-0.3,1];
+function main() {
+
+    // canvas 1
+    canvas1.bgColor = [0,0,0,1];
     var lineLength = 6;
-	
     // loop through all triangles
     for (let i = 0; i < map.length; i += lineLength*3) {
         // per triangle
@@ -64,11 +65,12 @@ canvas1.frame = () => {
             c[2] += 5;
             vertices.push(c);
         }
-        canvas1.triangleVertices = canvas1.triangleVertices
-            .concat(vertices[0])
-            .concat(vertices[1])
-            .concat(vertices[2]);
+        canvas1.drawTriangle(vertices, Math.floor(canvas1.loops/10)%2 == 0);
     }
+
+    canvas1.render();
+
+    requestAnimationFrame(main);
 }
 document.addEventListener('mousemove', (event) => {
     const x = event.clientX;
@@ -79,4 +81,4 @@ document.addEventListener('mousemove', (event) => {
     ];
 });
 
-canvas1.renderingFrame();
+main();

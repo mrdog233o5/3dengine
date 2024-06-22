@@ -48,7 +48,7 @@ const DoggyGraphicsEngine = class {
         this.canvas = canvas;
 
         // bind stuff
-        this.renderingFrame = this.renderingFrame.bind(this);
+        // this.renderingFrame = this.renderingFrame.bind(this);
 
         // initialize webgl
         if (this.canvas == undefined) return;
@@ -106,9 +106,35 @@ const DoggyGraphicsEngine = class {
     
     // blanks variables
     start: () => void | null;
-    frame: () => void | null;
-    
-    renderingFrame = ():void => {
+
+    drawLine = (vertices:[
+        [number, number, number, number, number, number],
+        [number, number, number, number, number, number],
+    ]) => {
+        canvas1.lineVertices = canvas1.lineVertices
+            .concat(vertices[0])
+            .concat(vertices[1]);
+    }
+
+    drawTriangle = (vertices:[
+        [number, number, number, number, number, number],
+        [number, number, number, number, number, number],
+        [number, number, number, number, number, number],
+    ],
+    lines:boolean=false):void => {
+        if (lines) {
+            for (let i = 0; i < 3; i++) {
+                this.drawLine([vertices[i], vertices[(i+1)%3]]);
+            }
+            return;
+        }
+        canvas1.triangleVertices = canvas1.triangleVertices
+            .concat(vertices[0])
+            .concat(vertices[1])
+            .concat(vertices[2]);
+    }
+
+    render = ():void => {
         // set canvas size
         this.canvas!.width = document.body.clientWidth;
         this.canvas!.height = document.body.clientHeight;
@@ -118,13 +144,6 @@ const DoggyGraphicsEngine = class {
         // clear screen
         this.gl!.clearColor(this.bgColor[0],this.bgColor[1],this.bgColor[2],this.bgColor[3]);
         this.gl!.clear(this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT);
-
-        // reset
-        this.triangleVertices = [];
-        this.lineVertices = [];
-
-        // run frame function
-        if (this.frame != undefined) this.frame();
 
         // set stuff
         const fovLocation = this.gl!.getUniformLocation(this.program, 'fov');
@@ -200,16 +219,19 @@ const DoggyGraphicsEngine = class {
         this.gl!.drawArrays(this.gl!.LINES, 0, lineVertices32.length / lenPerRow);
         this.gl!.flush();
 
-        // loop
+        // reset
         this.loops ++;
-        window.requestAnimationFrame(this.renderingFrame);
+        this.triangleVertices = [];
+        this.lineVertices = [];
     }
+
     calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {
         var [x, y] = coords;
         x = (coords[0] * Math.cos(camAngle * (Math.PI/180))) - (coords[1] * Math.sin(camAngle * (Math.PI/180)));
         y = (coords[0] * Math.sin(camAngle * (Math.PI/180))) + (coords[1] * Math.cos(camAngle * (Math.PI/180)));
         return [x, y];
     }
+
     calcRotatedCoord3D = (camAngle:[number, number], coords: [number, number, number]):[number, number, number] => {
         var [x, y, z] = coords;
         [y, z] = this.calcRotatedCoord2D(camAngle[0], [y, z]);
