@@ -4,10 +4,20 @@ precision highp float;
 in vec3 vertPos;
 in vec3 vertColor;
 out vec3 fragColor;
+uniform float fov;
+uniform float aspectRatio;
+uniform vec2 zRange;
 
 void main() {
+    float f = 1.0 / tan((radians(fov) / 2.0));
+    
+    float y = vertPos.y * f / abs(vertPos.z);
+    float x = vertPos.x * f / abs(vertPos.z) * aspectRatio;
+    float z = (vertPos.z - zRange.x) / (zRange.y - zRange.x) * 2.0 - 1.0;
+    vec3 newPos = vec3(x, y, z);
+    
     fragColor = vertColor;
-    gl_Position = vec4(vertPos.x, vertPos.y, vertPos.z, 1);
+    gl_Position = vec4(newPos, 1.0);
 }
 `;
 
@@ -115,6 +125,16 @@ const DoggyGraphicsEngine = class {
         // run frame function
         if (this.frame != undefined) this.frame();
 
+        // set stuff
+        const fovLocation = this.gl!.getUniformLocation(this.program, 'fov');
+        const aspectRatioLocation = this.gl!.getUniformLocation(this.program, 'aspectRatio');
+        const zRangeLocation = this.gl!.getUniformLocation(this.program, 'zRange');
+
+        // Set the uniform values
+        this.gl!.uniform1f(fovLocation, this.fov);
+        this.gl!.uniform1f(aspectRatioLocation, this.screenSize[1] / this.screenSize[0]);
+        this.gl!.uniform2f(zRangeLocation, this.zRange[0], this.zRange[1]);
+
         // draw triangles
         var triangleVertices32 = new Float32Array(this.triangleVertices);
 
@@ -182,15 +202,6 @@ const DoggyGraphicsEngine = class {
         // loop
         this.loops ++;
         window.requestAnimationFrame(this.renderingFrame);
-    }
-    projecting3D = (fov:number, screenSize:[number, number], zRange:[number, number], coords:[number, number, number]):[number, number, number] => {
-        var f = 1/(Math.tan((Math.PI/180)*fov / 2));
-        var a = screenSize[1]/screenSize[0];
-        var [x, y, z] = coords;
-        y = y * f / Math.abs(z);
-        x = x * f / Math.abs(z) * a;
-        z = (z - zRange[0]) / (zRange[1] - zRange[0]) * 2 - 1;
-        return [x, y, z];
     }
     calcRotatedCoord2D = (camAngle:number, coords: [number, number]):[number, number] => {
         var [x, y] = coords;

@@ -61,7 +61,7 @@ canvas1.frame = () => {
             c[1] = rotated[1];
             c[2] = rotated[2];
             c[2] += 5;
-            vertices.push(canvas1.projecting3D(canvas1.fov, canvas1.screenSize, canvas1.zRange, c).concat(map.slice(j+3, j+lineLength)));
+            vertices.push(c);
         }
         canvas1.triangleVertices = canvas1.triangleVertices
             .concat(vertices[0])
