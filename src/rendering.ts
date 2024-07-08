@@ -107,6 +107,62 @@ const DoggyGraphicsEngine = class {
     // blanks variables
     start: () => void | null;
 
+    // NOT FINISHED
+    polygonTriangulation = (vertices:number[]):[number,number,number][] => {
+        var res:[number,number,number][] = [];
+        for (var i = 0, j = vertices.length-1; res.length < vertices.length - 2; i++, j--) {
+            res.push([
+                i,
+                j,
+                (i%2==0?i:j)+1
+            ].map((value) => vertices[value]) as [number, number, number]);
+        }
+
+        return res;
+    }
+
+    // NOT FINISHED
+    readOBJ = (rawContent:string):object[] => {
+        var content = rawContent.split("\n").map(line => line.trim().split(" "));
+        var res:{}[] = [];
+        var tempName:string = "";
+        var tempVertices:[number,number,number][] = [];
+        var tempTriangles:number[] = [];
+        content.forEach((line, i) => {
+            switch (line[0]) {
+                case "o":
+                    tempName = line[1];
+                    break;
+                
+                case "v":
+                    tempVertices.push(line.slice(1).map(coord => Number(coord)) as [number, number, number]);
+                    break;
+
+                case "f":
+                    this.polygonTriangulation(line.slice(1).map((value) => Number(value))).forEach((vertices, index) => {
+                        var a = Math.random();
+                        vertices.forEach((vertex) => {
+                            tempTriangles = tempTriangles.concat(tempVertices[vertex-1]).concat([1,a,0]);
+                        });
+                    });
+                    break;
+
+                default:
+                    console.warn(`unknown command in obj file: ${line[0]}`);
+                    break;
+            }
+        });
+
+        // add object
+        res[tempName] = {
+            "vertices": tempVertices,
+            "triangles": tempTriangles,
+        };
+
+
+        return res;
+    }
+
     drawLine = (vertices:[
         [number, number, number, number, number, number],
         [number, number, number, number, number, number],
