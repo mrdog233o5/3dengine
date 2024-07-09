@@ -38,10 +38,6 @@ const lenPerRow = 6;
 // main render loop
 // 
 
-function isNotNullOrUndefined<T>(value: T): value is NonNullable<T> {
-    return value !== null && value !== undefined;
-}
-
 const DoggyGraphicsEngine = class {
     constructor(canvas: HTMLCanvasElement) {
         // set stuff
