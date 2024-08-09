@@ -1,33 +1,37 @@
 // import DoggyGraphicsEngine from "/src/rendering.ts";
 
 // load stuff
-var map = [
-	1, 1, -1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, -1, 1, 1, 0, 1,
 
-	1, 1, -1, 1, 0, 1, 1, -1, -1, 1, 0, 1, 1, -1, 1, 1, 0, 1,
-
-	-1, 1, -1, 1, 0, 1, -1, 1, 1, 1, 0, 1, -1, -1, 1, 1, 0, 1,
-
-	-1, 1, -1, 1, 0, 1, -1, -1, -1, 1, 0, 1, -1, -1, 1, 1, 0, 1,
-
-	1, 1, -1, 0, 1, 1, 1, 1, 1, 0, 1, 1, -1, 1, 1, 0, 1, 1,
-
-	1, 1, -1, 0, 1, 1, -1, 1, -1, 0, 1, 1, -1, 1, 1, 0, 1, 1,
-
-	1, -1, -1, 0, 1, 1, 1, -1, 1, 0, 1, 1, -1, -1, 1, 0, 1, 1,
-
-	1, -1, -1, 0, 1, 1, -1, -1, -1, 0, 1, 1, -1, -1, 1, 0, 1, 1,
-
-	1, 1, 1, 1, 1, 0, 1, -1, 1, 1, 1, 0, -1, -1, 1, 1, 1, 0,
-
-	1, 1, 1, 1, 1, 0, -1, 1, 1, 1, 1, 0, -1, -1, 1, 1, 1, 0,
+var textureCoords = [
+    // Front
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+    // Back
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+    // Top
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+    // Bottom
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+    // Right
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
+    // Left
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
 ];
+var map = [];
+
+
 
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
 canvas1.fov = 90;
 canvas1.zRange[0] = 0.1;
 var startT = new Date().getTime();
-map = canvas1.readOBJ(`o Cube
+
+mapold = canvas1.readOBJ(`o Cube
         v 1.000000 1.000000 -1.000000
         v 1.000000 -1.000000 -1.000000
         v 1.000000 1.000000 1.000000
@@ -43,12 +47,25 @@ map = canvas1.readOBJ(`o Cube
         f 2 1 3 4
         f 6 5 1 2`)["Cube"].triangles;
 
+for (let i = 0; i < mapold.length/9; i++) {
+    for (let j = 0; j < 3; j++) {
+        console.log(mapold.slice(i*9+j*3, i*9+j*3+3));
+        map = map
+        .concat(mapold.slice(i*9+j*3, i*9+j*3+3))
+        .concat(textureCoords.slice(i*6+j*2, i*6+j*2+2));
+        // .concat([0,0]);
+    }
+}
+
+
+console.log(map);
+
 canvas1.setTexture("cubetexture.png");
 
 function main() {
 	// canvas 1
 	canvas1.bgColor = [0, 0, 0, 1];
-	var lineLength = 6;
+	var lineLength = 5;
 	// loop through all triangles
 	for (let i = 0; i < map.length; i += lineLength * 3) {
 		// per triangle
@@ -70,11 +87,6 @@ function main() {
 	}
 
 	canvas1.render();
-	console.log(
-		Math.round(
-			canvas1.loops / ((new Date().getTime() - startT) / 1000)
-		)
-	);
 
 	requestAnimationFrame(main);
 }

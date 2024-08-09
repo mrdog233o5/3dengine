@@ -2,10 +2,9 @@ const vertexShaderText = String.raw`#version 300 es
 precision highp float;
 
 in vec3 vertPos;
-in vec3 vertColor;
 in vec2 aTextureCoord;
-out vec3 fragColor;
 out vec2 vTextureCoord;
+
 uniform float fov;
 uniform float aspectRatio;
 uniform vec2 zRange;
@@ -18,24 +17,25 @@ void main() {
     float z = (vertPos.z - zRange.x) / (zRange.y - zRange.x) * 2.0 - 1.0;
     vec3 newPos = vec3(x, y, z);
     
-    fragColor = vertColor;
     gl_Position = vec4(newPos, 1.0);
-    vTextureCoord = aTextureCoord;
+    // vTextureCoord = aTextureCoord;
 }
 `;
 
 const fragmentShaderText = String.raw`#version 300 es
 precision highp float;
 
-in vec3 fragColor;
-out vec4 color;
+in vec2 vTextureCoord;
+uniform sampler2D uSampler;
+out vec4 fragColor;
 
 void main() {
-	color = vec4(fragColor, 1);
+	fragColor = texture(uSampler, vTextureCoord);
 }
 `;
 
-const lenPerRow = 6;
+const lenPerRowTriangle = 5;
+const lenPerRowLine = 6;
 
 //
 // main render loop
@@ -125,6 +125,7 @@ const DoggyGraphicsEngine = class {
 	loops: number = 0;
 	triangleVertices: number[] = [];
 	lineVertices: number[] = [];
+	textureCoords: number[] = [];
 	canvas: HTMLCanvasElement | null;
 	gl: WebGL2RenderingContext | null;
 	program: WebGLProgram;
@@ -259,7 +260,6 @@ const DoggyGraphicsEngine = class {
 								Number(value)
 							)
 					).forEach((vertices, index) => {
-						var a = Math.random();
 						vertices.forEach((vertex) => {
 							tempTriangles =
 								tempTriangles
@@ -268,14 +268,13 @@ const DoggyGraphicsEngine = class {
 											vertex -
 												1
 										]
-									)
-									.concat(
-										[
-											1,
-											a,
-											0,
-										]
 									);
+									// .concat(
+									// 	[
+									// 		0,
+                                    //         0
+									// 	]
+									// );
 						});
 					});
 					break;
@@ -297,10 +296,10 @@ const DoggyGraphicsEngine = class {
 		return res;
 	};
 
-    setTexture = (url:string):void => {
-        const texture = this.loadTexture(url);
-        this.gl!.pixelStorei(this.gl!.UNPACK_FLIP_Y_WEBGL, true);
-    }
+	setTexture = (url: string): void => {
+		const texture = this.loadTexture(url);
+		this.gl!.pixelStorei(this.gl!.UNPACK_FLIP_Y_WEBGL, true);
+	};
 
 	drawLine = (
 		vertices: [
@@ -315,21 +314,11 @@ const DoggyGraphicsEngine = class {
 
 	drawTriangle = (
 		vertices: [
-			[number, number, number, number, number, number],
-			[number, number, number, number, number, number],
-			[number, number, number, number, number, number]
-		],
-		lines: boolean = false
+			[number, number, number, number, number,],
+			[number, number, number, number, number,],
+			[number, number, number, number, number,]
+		]
 	): void => {
-		if (lines) {
-			for (let i = 0; i < 3; i++) {
-				this.drawLine([
-					vertices[i],
-					vertices[(i + 1) % 3],
-				]);
-			}
-			return;
-		}
 		canvas1.triangleVertices = canvas1.triangleVertices
 			.concat(vertices[0])
 			.concat(vertices[1])
@@ -386,6 +375,7 @@ const DoggyGraphicsEngine = class {
 		);
 
 		// draw triangles
+        // console.log(this.triangleVertices);
 		var triangleVertices32 = new Float32Array(
 			this.triangleVertices
 		);
@@ -405,7 +395,7 @@ const DoggyGraphicsEngine = class {
 			this.program,
 			"vertPos"
 		);
-		var colorAttribLocation = this.gl!.getAttribLocation(
+		var textureCoordsAttribLocation = this.gl!.getAttribLocation(
 			this.program,
 			"vertColor"
 		);
@@ -415,28 +405,28 @@ const DoggyGraphicsEngine = class {
 			3,
 			this.gl!.FLOAT,
 			false,
-			lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+			lenPerRowTriangle * Float32Array.BYTES_PER_ELEMENT,
 			0
 		);
 		this.gl!.vertexAttribPointer(
-			colorAttribLocation,
-			3,
+			textureCoordsAttribLocation,
+			2,
 			this.gl!.FLOAT,
 			false,
-			lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+			lenPerRowTriangle * Float32Array.BYTES_PER_ELEMENT,
 			3 * Float32Array.BYTES_PER_ELEMENT
 		);
 
 		this.gl!.enableVertexAttribArray(positionAttribLocation);
-		this.gl!.enableVertexAttribArray(colorAttribLocation);
+		this.gl!.enableVertexAttribArray(textureCoordsAttribLocation);
 
 		this.gl!.drawArrays(
 			this.gl!.TRIANGLES,
 			0,
-			triangleVertices32.length / lenPerRow
+			triangleVertices32.length / lenPerRowTriangle
 		);
 
-		// draw LINES
+		// draw lines
 		var lineVertices32 = new Float32Array(this.lineVertices);
 
 		var lineVertexBufferObject = this.gl!.createBuffer();
@@ -454,7 +444,7 @@ const DoggyGraphicsEngine = class {
 			this.program,
 			"vertPos"
 		);
-		colorAttribLocation = this.gl!.getAttribLocation(
+		textureCoordsAttribLocation = this.gl!.getAttribLocation(
 			this.program,
 			"vertColor"
 		);
@@ -464,24 +454,24 @@ const DoggyGraphicsEngine = class {
 			3,
 			this.gl!.FLOAT,
 			false,
-			lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+			lenPerRowLine * Float32Array.BYTES_PER_ELEMENT,
 			0
 		);
 		this.gl!.vertexAttribPointer(
-			colorAttribLocation,
-			3,
+			textureCoordsAttribLocation,
+			2,
 			this.gl!.FLOAT,
 			false,
-			lenPerRow * Float32Array.BYTES_PER_ELEMENT,
+			lenPerRowLine * Float32Array.BYTES_PER_ELEMENT,
 			3 * Float32Array.BYTES_PER_ELEMENT
 		);
 
 		this.gl!.enableVertexAttribArray(positionAttribLocation);
-		this.gl!.enableVertexAttribArray(colorAttribLocation);
+		this.gl!.enableVertexAttribArray(textureCoordsAttribLocation);
 		this.gl!.drawArrays(
 			this.gl!.LINES,
 			0,
-			lineVertices32.length / lenPerRow
+			lineVertices32.length / lenPerRowTriangle
 		);
 		this.gl!.flush();
 
