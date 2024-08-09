@@ -2,45 +2,25 @@
 
 // load stuff
 var map = [
-    1, 1, -1, 1, 0, 1,
-    1, 1, 1, 1, 0, 1,
-    1, -1, 1, 1, 0, 1,
+	1, 1, -1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, -1, 1, 1, 0, 1,
 
-    1, 1, -1, 1, 0, 1,
-    1, -1, -1, 1, 0, 1,
-    1, -1, 1, 1, 0, 1,
+	1, 1, -1, 1, 0, 1, 1, -1, -1, 1, 0, 1, 1, -1, 1, 1, 0, 1,
 
-    -1, 1, -1, 1, 0, 1,
-    -1, 1, 1, 1, 0, 1,
-    -1, -1, 1, 1, 0, 1,
+	-1, 1, -1, 1, 0, 1, -1, 1, 1, 1, 0, 1, -1, -1, 1, 1, 0, 1,
 
-    -1, 1, -1, 1, 0, 1,
-    -1, -1, -1, 1, 0, 1,
-    -1, -1, 1, 1, 0, 1,
-    
-    1, 1, -1, 0, 1, 1,
-    1, 1, 1, 0, 1, 1,
-    -1, 1, 1, 0, 1, 1,
+	-1, 1, -1, 1, 0, 1, -1, -1, -1, 1, 0, 1, -1, -1, 1, 1, 0, 1,
 
-    1, 1, -1, 0, 1, 1,
-    -1, 1, -1, 0, 1, 1,
-    -1, 1, 1, 0, 1, 1,
+	1, 1, -1, 0, 1, 1, 1, 1, 1, 0, 1, 1, -1, 1, 1, 0, 1, 1,
 
-    1, -1, -1, 0, 1, 1,
-    1, -1, 1, 0, 1, 1,
-    -1, -1, 1, 0, 1, 1,
+	1, 1, -1, 0, 1, 1, -1, 1, -1, 0, 1, 1, -1, 1, 1, 0, 1, 1,
 
-    1, -1, -1, 0, 1, 1,
-    -1, -1, -1, 0, 1, 1,
-    -1, -1, 1, 0, 1, 1,
+	1, -1, -1, 0, 1, 1, 1, -1, 1, 0, 1, 1, -1, -1, 1, 0, 1, 1,
 
-    1, 1, 1, 1, 1, 0,
-    1, -1, 1, 1, 1, 0,
-    -1, -1, 1, 1, 1, 0,
+	1, -1, -1, 0, 1, 1, -1, -1, -1, 0, 1, 1, -1, -1, 1, 0, 1, 1,
 
-    1, 1, 1, 1, 1, 0,
-    -1, 1, 1, 1, 1, 0,
-    -1, -1, 1, 1, 1, 0,
+	1, 1, 1, 1, 1, 0, 1, -1, 1, 1, 1, 0, -1, -1, 1, 1, 1, 0,
+
+	1, 1, 1, 1, 1, 0, -1, 1, 1, 1, 1, 0, -1, -1, 1, 1, 1, 0,
 ];
 
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
@@ -63,40 +43,48 @@ map = canvas1.readOBJ(`o Cube
         f 2 1 3 4
         f 6 5 1 2`)["Cube"].triangles;
 
+canvas1.setTexture("cubetexture.png");
+
 function main() {
+	// canvas 1
+	canvas1.bgColor = [0, 0, 0, 1];
+	var lineLength = 6;
+	// loop through all triangles
+	for (let i = 0; i < map.length; i += lineLength * 3) {
+		// per triangle
+		var vertices = [];
+		for (let j = i; j < i + lineLength * 3; j += lineLength) {
+			// per vertex
+			var c = map.slice(j, j + lineLength);
+			var rotated = canvas1.calcRotatedCoord3D(
+				canvas1.camAngle,
+				c
+			);
+			c[0] = rotated[0];
+			c[1] = rotated[1];
+			c[2] = rotated[2];
+			c[2] += 4;
+			vertices.push(c);
+		}
+		canvas1.drawTriangle(vertices);
+	}
 
-    // canvas 1
-    canvas1.bgColor = [0,0,0,1];
-    var lineLength = 6;
-    // loop through all triangles
-    for (let i = 0; i < map.length; i += lineLength*3) {
-        // per triangle
-        var vertices = [];
-        for (let j = i; j < i+lineLength*3; j += lineLength) {
-            // per vertex
-            var c = map.slice(j, j+lineLength);
-            var rotated = canvas1.calcRotatedCoord3D(canvas1.camAngle, c);
-            c[0] = rotated[0];
-            c[1] = rotated[1];
-            c[2] = rotated[2];
-            c[2] += 4;
-            vertices.push(c);
-        }
-        canvas1.drawTriangle(vertices);
-    }
+	canvas1.render();
+	console.log(
+		Math.round(
+			canvas1.loops / ((new Date().getTime() - startT) / 1000)
+		)
+	);
 
-    canvas1.render();
-    console.log(Math.round(canvas1.loops / ((new Date().getTime() - startT)/1000)));
-
-    requestAnimationFrame(main);
+	requestAnimationFrame(main);
 }
-document.addEventListener('mousemove', (event) => {
-    const x = event.clientX;
-    const y = event.clientY;
-    canvas1.camAngle = [
-        -(y/canvas1.screenSize[1]*360) - 360/2,
-        -(-x/canvas1.screenSize[0]*360) + 360/2
-    ];
+document.addEventListener("mousemove", (event) => {
+	const x = event.clientX;
+	const y = event.clientY;
+	canvas1.camAngle = [
+		-((y / canvas1.screenSize[1]) * 360) - 360 / 2,
+		-((-x / canvas1.screenSize[0]) * 360) + 360 / 2,
+	];
 });
 
 main();
