@@ -4,7 +4,7 @@
 
 var textureCoords = [
     // Front
-    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+    0.0, 0.0, 250.0, 0.0, 250.0, 250.0,
     0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
     // Back
     0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
@@ -49,18 +49,11 @@ mapold = canvas1.readOBJ(`o Cube
 
 for (let i = 0; i < mapold.length/9; i++) {
     for (let j = 0; j < 3; j++) {
-        console.log(mapold.slice(i*9+j*3, i*9+j*3+3));
         map = map
         .concat(mapold.slice(i*9+j*3, i*9+j*3+3))
         .concat(textureCoords.slice(i*6+j*2, i*6+j*2+2));
-        // .concat([0,0]);
     }
 }
-
-
-console.log(map);
-
-canvas1.setTexture("cubetexture.png");
 
 function main() {
 	// canvas 1

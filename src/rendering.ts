@@ -18,7 +18,7 @@ void main() {
     vec3 newPos = vec3(x, y, z);
     
     gl_Position = vec4(newPos, 1.0);
-    // vTextureCoord = aTextureCoord;
+    vTextureCoord = aTextureCoord;
 }
 `;
 
@@ -116,6 +116,7 @@ const DoggyGraphicsEngine = class {
 		this.gl!.depthFunc(this.gl!.LESS);
 		this.gl!.depthMask(true);
 	}
+    texture: WebGLTexture | null;
 	fov: number = 90;
 	screenSize: [number, number] = [0, 0];
 	zRange: [number, number] = [0.5, 10];
@@ -129,9 +130,6 @@ const DoggyGraphicsEngine = class {
 	canvas: HTMLCanvasElement | null;
 	gl: WebGL2RenderingContext | null;
 	program: WebGLProgram;
-
-	// blanks variables
-	start: () => void | null;
 
 	// NOT FINISHED
 	polygonTriangulation = (
@@ -296,11 +294,6 @@ const DoggyGraphicsEngine = class {
 		return res;
 	};
 
-	setTexture = (url: string): void => {
-		const texture = this.loadTexture(url);
-		this.gl!.pixelStorei(this.gl!.UNPACK_FLIP_Y_WEBGL, true);
-	};
-
 	drawLine = (
 		vertices: [
 			[number, number, number, number, number, number],
@@ -326,6 +319,10 @@ const DoggyGraphicsEngine = class {
 	};
 
 	render = (): void => {
+        if (this.loops == 0) {
+            this.texture = this.loadTexture("/b.png");
+            this.gl!.pixelStorei(this.gl!.UNPACK_FLIP_Y_WEBGL, true);
+        }
 		// set canvas size
 		this.canvas!.width = document.body.clientWidth;
 		this.canvas!.height = document.body.clientHeight;
@@ -361,6 +358,10 @@ const DoggyGraphicsEngine = class {
 			this.program,
 			"zRange"
 		);
+		const uSamplerLocation = this.gl!.getUniformLocation(
+			this.program,
+			"uSampler"
+		);
 
 		// Set the uniform values
 		this.gl!.uniform1f(fovLocation, this.fov);
@@ -373,9 +374,13 @@ const DoggyGraphicsEngine = class {
 			this.zRange[0],
 			this.zRange[1]
 		);
+        
+        this.gl!.activeTexture(this.gl!.TEXTURE0);
+        this.gl!.bindTexture(this.gl!.TEXTURE_2D, this.texture);
+        this.gl!.uniform1i(uSamplerLocation, 0);
 
-		// draw triangles
-        // console.log(this.triangleVertices);
+            // draw triangles
+            console.log(this.triangleVertices);
 		var triangleVertices32 = new Float32Array(
 			this.triangleVertices
 		);
