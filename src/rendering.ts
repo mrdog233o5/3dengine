@@ -116,7 +116,7 @@ const DoggyGraphicsEngine = class {
 		this.gl!.depthFunc(this.gl!.LESS);
 		this.gl!.depthMask(true);
 	}
-    texture: WebGLTexture | null;
+	texture: WebGLTexture | null;
 	fov: number = 90;
 	screenSize: [number, number] = [0, 0];
 	zRange: [number, number] = [0.5, 10];
@@ -260,19 +260,18 @@ const DoggyGraphicsEngine = class {
 					).forEach((vertices, index) => {
 						vertices.forEach((vertex) => {
 							tempTriangles =
-								tempTriangles
-									.concat(
-										tempVertices[
-											vertex -
-												1
-										]
-									);
-									// .concat(
-									// 	[
-									// 		0,
-                                    //         0
-									// 	]
-									// );
+								tempTriangles.concat(
+									tempVertices[
+										vertex -
+											1
+									]
+								);
+							// .concat(
+							// 	[
+							// 		0,
+							//         0
+							// 	]
+							// );
 						});
 					});
 					break;
@@ -307,9 +306,9 @@ const DoggyGraphicsEngine = class {
 
 	drawTriangle = (
 		vertices: [
-			[number, number, number, number, number,],
-			[number, number, number, number, number,],
-			[number, number, number, number, number,]
+			[number, number, number, number, number],
+			[number, number, number, number, number],
+			[number, number, number, number, number]
 		]
 	): void => {
 		canvas1.triangleVertices = canvas1.triangleVertices
@@ -319,10 +318,13 @@ const DoggyGraphicsEngine = class {
 	};
 
 	render = (): void => {
-        if (this.loops == 0) {
-            this.texture = this.loadTexture("/b.png");
-            this.gl!.pixelStorei(this.gl!.UNPACK_FLIP_Y_WEBGL, true);
-        }
+		if (this.loops == 0) {
+			this.texture = this.loadTexture("/c.png");
+			this.gl!.pixelStorei(
+				this.gl!.UNPACK_FLIP_Y_WEBGL,
+				true
+			);
+		}
 		// set canvas size
 		this.canvas!.width = document.body.clientWidth;
 		this.canvas!.height = document.body.clientHeight;
@@ -374,25 +376,21 @@ const DoggyGraphicsEngine = class {
 			this.zRange[0],
 			this.zRange[1]
 		);
-        
-        this.gl!.activeTexture(this.gl!.TEXTURE0);
-        this.gl!.bindTexture(this.gl!.TEXTURE_2D, this.texture);
-        this.gl!.uniform1i(uSamplerLocation, 0);
 
-            // draw triangles
-            console.log(this.triangleVertices);
-		var triangleVertices32 = new Float32Array(
-			this.triangleVertices
-		);
+		this.gl!.activeTexture(this.gl!.TEXTURE0);
+		this.gl!.bindTexture(this.gl!.TEXTURE_2D, this.texture);
+		this.gl!.uniform1i(uSamplerLocation, 0);
 
-		var triangleVertexBufferObject = this.gl!.createBuffer();
+		// draw triangles
+		var triangleVertexBuffer = this.gl!.createBuffer();
 		this.gl!.bindBuffer(
 			this.gl!.ARRAY_BUFFER,
-			triangleVertexBufferObject
+			triangleVertexBuffer
 		);
+
 		this.gl!.bufferData(
 			this.gl!.ARRAY_BUFFER,
-			triangleVertices32,
+			new Float32Array(this.triangleVertices),
 			this.gl!.STATIC_DRAW
 		);
 
@@ -402,7 +400,7 @@ const DoggyGraphicsEngine = class {
 		);
 		var textureCoordsAttribLocation = this.gl!.getAttribLocation(
 			this.program,
-			"vertColor"
+			"aTextureCoord"
 		);
 
 		this.gl!.vertexAttribPointer(
@@ -428,7 +426,7 @@ const DoggyGraphicsEngine = class {
 		this.gl!.drawArrays(
 			this.gl!.TRIANGLES,
 			0,
-			triangleVertices32.length / lenPerRowTriangle
+			this.triangleVertices.length / lenPerRowTriangle
 		);
 
 		// draw lines
