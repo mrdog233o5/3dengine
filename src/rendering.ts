@@ -2,7 +2,7 @@ const vertexShaderText = String.raw`#version 300 es
 precision highp float;
 
 in vec3 vertPos;
-in vec2 aTextureCoord;
+in vec2 textureCoord;
 out vec2 vTextureCoord;
 
 uniform float fov;
@@ -18,7 +18,7 @@ void main() {
     vec3 newPos = vec3(x, y, z);
     
     gl_Position = vec4(newPos, 1.0);
-    vTextureCoord = aTextureCoord;
+    vTextureCoord = textureCoord;
 }
 `;
 
@@ -43,19 +43,12 @@ const lenPerRowLine = 6;
 
 const DoggyGraphicsEngine = class {
 	constructor(canvas: HTMLCanvasElement) {
-		// set stuff
 		this.canvas = canvas;
-
-		// bind stuff
-		// this.renderingFrame = this.renderingFrame.bind(this);
-
-		// initialize webgl
 		if (this.canvas == undefined) return;
 		this.gl = this.canvas.getContext(
 			"webgl2"
 		) as WebGL2RenderingContext | null;
 		if (!this.gl) {
-			// Fall back to WebGL 1.0 if WebGL 2.0 is not available
 			this.gl = this.canvas.getContext(
 				"webgl"
 			) as WebGL2RenderingContext | null;
@@ -69,46 +62,7 @@ const DoggyGraphicsEngine = class {
 			console.log("Using WebGL 2.0");
 		}
 
-		var vertexShader: WebGLShader = this.gl!.createShader(
-			this.gl!.VERTEX_SHADER
-		) as WebGLShader;
-		var fragmentShader: WebGLShader = this.gl!.createShader(
-			this.gl!.FRAGMENT_SHADER
-		) as WebGLShader;
-
-		this.gl!.shaderSource(vertexShader, vertexShaderText);
-		this.gl!.shaderSource(fragmentShader, fragmentShaderText);
-
-		this.gl!.compileShader(vertexShader);
-		if (
-			!this.gl!.getShaderParameter(
-				vertexShader,
-				this.gl!.COMPILE_STATUS
-			)
-		) {
-			console.error(
-				"Couldn't compile vertex shader:",
-				this.gl!.getShaderInfoLog(vertexShader)
-			);
-		}
-		this.gl!.compileShader(fragmentShader);
-		if (
-			!this.gl!.getShaderParameter(
-				fragmentShader,
-				this.gl!.COMPILE_STATUS
-			)
-		) {
-			console.error(
-				"Couldn't compile fragment shader:",
-				this.gl!.getShaderInfoLog(fragmentShader)
-			);
-		}
-
-		this.program = this.gl!.createProgram() as WebGLProgram;
-
-		this.gl!.attachShader(this.program, vertexShader);
-		this.gl!.attachShader(this.program, fragmentShader);
-		this.gl!.linkProgram(this.program);
+		this.program = this.initShaderProgram();
 
 		this.gl!.useProgram(this.program);
 
@@ -129,7 +83,59 @@ const DoggyGraphicsEngine = class {
 	textureCoords: number[] = [];
 	canvas: HTMLCanvasElement | null;
 	gl: WebGL2RenderingContext | null;
+	programInfo;
 	program: WebGLProgram;
+
+	initShaderProgram = ():WebGLProgram => {
+		var vertexShader: WebGLShader = this.loadShader(this.gl!.VERTEX_SHADER, vertexShaderText);
+		var fragmentShader: WebGLShader = this.loadShader(this.gl!.FRAGMENT_SHADER, fragmentShaderText);
+
+		var program = this.gl!.createProgram() as WebGLProgram;
+
+		this.gl!.attachShader(program, vertexShader);
+		this.gl!.attachShader(program, fragmentShader);
+		this.gl!.linkProgram(program);
+
+		return program;
+	}
+
+	setBuffers = () => {
+		this.programInfo = {
+			attribLocations: {
+				vertPos: this.gl!.getAttribLocation(this.program, "vertPos"),
+				textureCoord: this.gl!.getAttribLocation(this.program, "textureCoord"),
+			},
+			uniformLocations: {
+				fovLocation: this.gl!.getUniformLocation(this.program, "fov"),
+				aspectRatioLocation: this.gl!.getUniformLocation(this.program, "aspectRatio"),
+				zRangeLocation: this.gl!.getUniformLocation(this.program, "zRange"),
+				uSamplerLocation: this.gl!.getUniformLocation(this.program, "uSampler"),
+			},
+		}
+	}
+
+	loadShader = (type, source:string):WebGLShader => {
+		const shader:WebGLShader = this.gl!.createShader(type) as WebGLShader;
+	  
+		this.gl!.shaderSource(shader, source);
+	  
+		this.gl!.compileShader(shader);
+
+		if (!this.gl!.getShaderParameter(shader, this.gl!.COMPILE_STATUS)) {
+			console.error("Couldn't compile shader:", this.gl!.getShaderInfoLog(shader));
+		}
+	  
+		return shader;
+	}
+
+	init = ():void => {
+		this.setBuffers();
+		this.texture = this.loadTexture("/c.png");
+		this.gl!.pixelStorei(
+			this.gl!.UNPACK_FLIP_Y_WEBGL,
+			true
+		);
+	}
 
 	// NOT FINISHED
 	polygonTriangulation = (
@@ -319,11 +325,7 @@ const DoggyGraphicsEngine = class {
 
 	render = (): void => {
 		if (this.loops == 0) {
-			this.texture = this.loadTexture("/c.png");
-			this.gl!.pixelStorei(
-				this.gl!.UNPACK_FLIP_Y_WEBGL,
-				true
-			);
+			this.init()
 		}
 		// set canvas size
 		this.canvas!.width = document.body.clientWidth;
@@ -347,39 +349,15 @@ const DoggyGraphicsEngine = class {
 			this.gl!.COLOR_BUFFER_BIT | this.gl!.DEPTH_BUFFER_BIT
 		);
 
-		// set stuff
-		const fovLocation = this.gl!.getUniformLocation(
-			this.program,
-			"fov"
-		);
-		const aspectRatioLocation = this.gl!.getUniformLocation(
-			this.program,
-			"aspectRatio"
-		);
-		const zRangeLocation = this.gl!.getUniformLocation(
-			this.program,
-			"zRange"
-		);
-		const uSamplerLocation = this.gl!.getUniformLocation(
-			this.program,
-			"uSampler"
-		);
+		this.setBuffers();
+		this.gl!.uniform1f(this.programInfo.uniformLocations.fovLocation, this.fov);
+		this.gl!.uniform1f(this.programInfo.uniformLocations.aspectRatioLocation,this.screenSize[1] / this.screenSize[0]);
+		this.gl!.uniform2f(this.programInfo.uniformLocations.zRangeLocation,this.zRange[0],this.zRange[1]);
+		this.gl!.uniform1i(this.programInfo.uniformLocations.uSamplerLocation, 0);
 
-		// Set the uniform values
-		this.gl!.uniform1f(fovLocation, this.fov);
-		this.gl!.uniform1f(
-			aspectRatioLocation,
-			this.screenSize[1] / this.screenSize[0]
-		);
-		this.gl!.uniform2f(
-			zRangeLocation,
-			this.zRange[0],
-			this.zRange[1]
-		);
-
+		// Set the texture
 		this.gl!.activeTexture(this.gl!.TEXTURE0);
 		this.gl!.bindTexture(this.gl!.TEXTURE_2D, this.texture);
-		this.gl!.uniform1i(uSamplerLocation, 0);
 
 		// draw triangles
 		var triangleVertexBuffer = this.gl!.createBuffer();
@@ -394,17 +372,8 @@ const DoggyGraphicsEngine = class {
 			this.gl!.STATIC_DRAW
 		);
 
-		var positionAttribLocation = this.gl!.getAttribLocation(
-			this.program,
-			"vertPos"
-		);
-		var textureCoordsAttribLocation = this.gl!.getAttribLocation(
-			this.program,
-			"aTextureCoord"
-		);
-
 		this.gl!.vertexAttribPointer(
-			positionAttribLocation,
+			this.programInfo.attribLocations.vertPos,
 			3,
 			this.gl!.FLOAT,
 			false,
@@ -412,7 +381,7 @@ const DoggyGraphicsEngine = class {
 			0
 		);
 		this.gl!.vertexAttribPointer(
-			textureCoordsAttribLocation,
+			this.programInfo.attribLocations.textureCoord,
 			2,
 			this.gl!.FLOAT,
 			false,
@@ -420,8 +389,8 @@ const DoggyGraphicsEngine = class {
 			3 * Float32Array.BYTES_PER_ELEMENT
 		);
 
-		this.gl!.enableVertexAttribArray(positionAttribLocation);
-		this.gl!.enableVertexAttribArray(textureCoordsAttribLocation);
+		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.vertPos);
+		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
 
 		this.gl!.drawArrays(
 			this.gl!.TRIANGLES,
@@ -443,17 +412,8 @@ const DoggyGraphicsEngine = class {
 			this.gl!.STATIC_DRAW
 		);
 
-		positionAttribLocation = this.gl!.getAttribLocation(
-			this.program,
-			"vertPos"
-		);
-		textureCoordsAttribLocation = this.gl!.getAttribLocation(
-			this.program,
-			"vertColor"
-		);
-
 		this.gl!.vertexAttribPointer(
-			positionAttribLocation,
+			this.programInfo.attribLocations.vertPos,
 			3,
 			this.gl!.FLOAT,
 			false,
@@ -461,7 +421,7 @@ const DoggyGraphicsEngine = class {
 			0
 		);
 		this.gl!.vertexAttribPointer(
-			textureCoordsAttribLocation,
+			this.programInfo.attribLocations.textureCoord,
 			2,
 			this.gl!.FLOAT,
 			false,
@@ -469,8 +429,8 @@ const DoggyGraphicsEngine = class {
 			3 * Float32Array.BYTES_PER_ELEMENT
 		);
 
-		this.gl!.enableVertexAttribArray(positionAttribLocation);
-		this.gl!.enableVertexAttribArray(textureCoordsAttribLocation);
+		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.vertPos);
+		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
 		this.gl!.drawArrays(
 			this.gl!.LINES,
 			0,
