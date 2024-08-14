@@ -4,7 +4,7 @@
 
 var textureCoords = [
     // Front
-    0.0, 0.0, 250.0, 0.0, 250.0, 250.0,
+    0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
     0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
     // Back
     0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
@@ -54,6 +54,8 @@ for (let i = 0; i < mapold.length/9; i++) {
         .concat(textureCoords.slice(i*6+j*2, i*6+j*2+2));
     }
 }
+
+canvas1.textureCoord = textureCoords;
 
 function main() {
 	// canvas 1
