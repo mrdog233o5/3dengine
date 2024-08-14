@@ -67,7 +67,7 @@ function main() {
 			// per vertex
 			var c = map.slice(j, j + lineLength);
 			var rotated = canvas1.calcRotatedCoord3D(
-				canvas1.camAngle,
+				[canvas1.loops, canvas1.loops],
 				c
 			);
 			c[0] = rotated[0];

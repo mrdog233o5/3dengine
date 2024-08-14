@@ -79,7 +79,6 @@ const DoggyGraphicsEngine = class {
 	bgColor: [number, number, number, number] = [0, 0, 0, 0];
 	loops: number = 0;
 	triangleVertices: number[] = [];
-	lineVertices: number[] = [];
 	textureCoords: number[] = [];
 	canvas: HTMLCanvasElement | null;
 	gl: WebGL2RenderingContext | null;
@@ -397,51 +396,12 @@ const DoggyGraphicsEngine = class {
 			0,
 			this.triangleVertices.length / lenPerRowTriangle
 		);
-
-		// draw lines
-		var lineVertices32 = new Float32Array(this.lineVertices);
-
-		var lineVertexBufferObject = this.gl!.createBuffer();
-		this.gl!.bindBuffer(
-			this.gl!.ARRAY_BUFFER,
-			lineVertexBufferObject
-		);
-		this.gl!.bufferData(
-			this.gl!.ARRAY_BUFFER,
-			lineVertices32,
-			this.gl!.STATIC_DRAW
-		);
-
-		this.gl!.vertexAttribPointer(
-			this.programInfo.attribLocations.vertPos,
-			3,
-			this.gl!.FLOAT,
-			false,
-			lenPerRowLine * Float32Array.BYTES_PER_ELEMENT,
-			0
-		);
-		this.gl!.vertexAttribPointer(
-			this.programInfo.attribLocations.textureCoord,
-			2,
-			this.gl!.FLOAT,
-			false,
-			lenPerRowLine * Float32Array.BYTES_PER_ELEMENT,
-			3 * Float32Array.BYTES_PER_ELEMENT
-		);
-
-		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.vertPos);
-		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
-		this.gl!.drawArrays(
-			this.gl!.LINES,
-			0,
-			lineVertices32.length / lenPerRowTriangle
-		);
+		
 		this.gl!.flush();
 
 		// reset
 		this.loops++;
 		this.triangleVertices = [];
-		this.lineVertices = [];
 	};
 
 	calcRotatedCoord2D = (
