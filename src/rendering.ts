@@ -1,6 +1,3 @@
-import { buffer } from "stream/consumers";
-import { transformWithEsbuild } from "vite";
-
 const vertexShaderText = String.raw`#version 300 es
 precision highp float;
 
@@ -34,6 +31,7 @@ out vec4 fragColor;
 
 void main() {
 	fragColor = texture(uSampler, vTextureCoord);
+	// fragColor = vec4(1,1,1,1);
 }
 `;
 
@@ -47,25 +45,8 @@ const lenPerRowLine = 6;
 const DoggyGraphicsEngine = class {
 	constructor(canvas: HTMLCanvasElement) {
 		this.canvas = canvas;
-		if (this.canvas == undefined) return;
-		this.gl = this.canvas.getContext(
-			"webgl2"
-		) as WebGL2RenderingContext | null;
-		if (!this.gl) {
-			this.gl = this.canvas.getContext(
-				"webgl"
-			) as WebGL2RenderingContext | null;
-			if (!this.gl) {
-				console.error(
-					"WebGL is not supported in this browser."
-				);
-			}
-			console.log("Using WebGL 1.0");
-		} else {
-			console.log("Using WebGL 2.0");
-		}
-
-		this.program = this.initShaderProgram();
+		this.initWebGL();
+		this.initShaderProgram();
 
 		this.gl!.useProgram(this.program);
 
@@ -89,17 +70,35 @@ const DoggyGraphicsEngine = class {
 	buffers;
 	program: WebGLProgram;
 
-	initShaderProgram = ():WebGLProgram => {
+	initWebGL = ():void => {
+		if (this.canvas == undefined) return;
+		this.gl = this.canvas.getContext(
+			"webgl2"
+		) as WebGL2RenderingContext | null;
+		if (!this.gl) {
+			this.gl = this.canvas.getContext(
+				"webgl"
+			) as WebGL2RenderingContext | null;
+			if (!this.gl) {
+				console.error(
+					"WebGL is not supported in this browser."
+				);
+			}
+			console.log("Using WebGL 1.0");
+		} else {
+			console.log("Using WebGL 2.0");
+		}
+	}
+
+	initShaderProgram = ():void => {
 		var vertexShader: WebGLShader = this.loadShader(this.gl!.VERTEX_SHADER, vertexShaderText);
 		var fragmentShader: WebGLShader = this.loadShader(this.gl!.FRAGMENT_SHADER, fragmentShaderText);
 
-		var program = this.gl!.createProgram() as WebGLProgram;
+		this.program = this.gl!.createProgram() as WebGLProgram;
 
-		this.gl!.attachShader(program, vertexShader);
-		this.gl!.attachShader(program, fragmentShader);
-		this.gl!.linkProgram(program);
-
-		return program;
+		this.gl!.attachShader(this.program, vertexShader);
+		this.gl!.attachShader(this.program, fragmentShader);
+		this.gl!.linkProgram(this.program);
 	}
 
 	setProgramInfo = () => {
@@ -115,6 +114,18 @@ const DoggyGraphicsEngine = class {
 				uSamplerLocation: this.gl!.getUniformLocation(this.program, "uSampler"),
 			},
 		}
+	}
+
+	setViewport = (width:number, height:number):void => {
+		// set canvas size
+		this.canvas!.width = width;
+		this.canvas!.height = height;
+		this.screenSize = [width, height];
+		this.gl!.viewport(
+			0,
+			0,
+			width, height
+		);
 	}
 
 	loadBuffer = (bufferContent) => {
@@ -315,17 +326,6 @@ const DoggyGraphicsEngine = class {
 		return res;
 	};
 
-	drawLine = (
-		vertices: [
-			[number, number, number, number, number, number],
-			[number, number, number, number, number, number]
-		]
-	) => {
-		this.lineVertices = this.lineVertices
-			.concat(vertices[0])
-			.concat(vertices[1]);
-	};
-
 	drawTriangle = (
 		vertices: [
 			[number, number, number, number, number],
@@ -333,7 +333,7 @@ const DoggyGraphicsEngine = class {
 			[number, number, number, number, number]
 		]
 	): void => {
-		canvas1.triangleVertices = canvas1.triangleVertices
+		this.triangleVertices = this.triangleVertices
 			.concat(vertices[0])
 			.concat(vertices[1])
 			.concat(vertices[2]);
@@ -343,16 +343,6 @@ const DoggyGraphicsEngine = class {
 		if (this.loops == 0) {
 			this.init()
 		}
-		// set canvas size
-		this.canvas!.width = document.body.clientWidth;
-		this.canvas!.height = document.body.clientHeight;
-		this.screenSize = [this.canvas!.width, this.canvas!.height];
-		this.gl!.viewport(
-			0,
-			0,
-			this.gl!.canvas.width,
-			this.gl!.canvas.height
-		);
 
 		// clear screen
 		this.gl!.clearColor(
@@ -380,13 +370,14 @@ const DoggyGraphicsEngine = class {
 
 		// draw triangles
 		// vertPos
+		console.log(this.triangleVertices);
 		this.gl!.bindBuffer(this.gl!.ARRAY_BUFFER, this.buffers.vertPos);
-		this.gl!.vertexAttribPointer(this.programInfo.attribLocations.vertPos,3,this.gl!.FLOAT,false,lenPerRowTriangle * Float32Array.BYTES_PER_ELEMENT,0);
+		this.gl!.vertexAttribPointer(this.programInfo.attribLocations.vertPos, 	3 ,this.gl!.FLOAT,false,3 * Float32Array.BYTES_PER_ELEMENT,0);
 		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.vertPos);
 
 		// textureCoord
 		this.gl!.bindBuffer(this.gl!.ARRAY_BUFFER, this.buffers.textureCoord);
-		this.gl!.vertexAttribPointer(this.programInfo.attribLocations.textureCoord,2,this.gl!.FLOAT,false,2 * Float32Array.BYTES_PER_ELEMENT,0 * Float32Array.BYTES_PER_ELEMENT);
+		this.gl!.vertexAttribPointer(this.programInfo.attribLocations.textureCoord,2,this.gl!.FLOAT,false,2 * Float32Array.BYTES_PER_ELEMENT,0);
 		this.gl!.enableVertexAttribArray(this.programInfo.attribLocations.textureCoord);
 
 		this.gl!.drawArrays(this.gl!.TRIANGLES,0,this.triangleVertices.length / lenPerRowTriangle);

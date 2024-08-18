@@ -2,7 +2,7 @@
 
 // load stuff
 
-var textureCoords = [
+var textureCoord = [
     // Front
     0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
     0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
@@ -22,11 +22,30 @@ var textureCoords = [
     0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
     0.0, 0.0, 0.0, 1.0, 1.0, 1.0,
 ];
+var trianglePosition = [
+    // Front face
+    -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, 1.0,
+  
+    // Back face
+    -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0,
+  
+    // Top face
+    -1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0,
+  
+    // Bottom face
+    -1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, -1.0, 1.0, -1.0, -1.0, 1.0,
+  
+    // Right face
+    1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0,
+  
+    // Left face
+    -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0, -1.0,
+  ];
+  
 var map = [];
 
-
-
 const canvas1 = new DoggyGraphicsEngine(document.getElementById("canvas"));
+canvas1.setViewport(document.body.clientWidth, document.body.clientHeight);
 canvas1.fov = 90;
 canvas1.zRange[0] = 0.1;
 var startT = new Date().getTime();
@@ -51,16 +70,18 @@ for (let i = 0; i < mapold.length/9; i++) {
     for (let j = 0; j < 3; j++) {
         map = map
         .concat(mapold.slice(i*9+j*3, i*9+j*3+3))
-        .concat(textureCoords.slice(i*6+j*2, i*6+j*2+2));
+        // .concat(textureCoord.slice(i* 6+j*2, i*6+j*2+2));
     }
 }
+var lineLength = 3;
 
-canvas1.textureCoord = textureCoords;
+// map = mapold;
+
+canvas1.textureCoord = textureCoord;
 
 function main() {
 	// canvas 1
 	canvas1.bgColor = [0, 0, 0, 1];
-	var lineLength = 5;
 	// loop through all triangles
 	for (let i = 0; i < map.length; i += lineLength * 3) {
 		// per triangle
