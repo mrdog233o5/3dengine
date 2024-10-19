@@ -112,7 +112,6 @@ function initShaderProgram(gl, vsSource, fsSource) {
 		fsSource,
 	);
 
-	console.log(vertexShader);
 	const shaderProgram = gl.createProgram();
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
