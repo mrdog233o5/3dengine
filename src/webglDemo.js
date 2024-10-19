@@ -79,9 +79,7 @@ function main() {
 
 	const buffers = initBuffers(gl);
 
-	// Load texture
 	const texture = loadTexture(gl, "/cubeTexture.png");
-	// Flip image pixels into the bottom-to-top order that WebGL expects.
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
 	let then = 0;
@@ -114,14 +112,11 @@ function initShaderProgram(gl, vsSource, fsSource) {
 		fsSource,
 	);
 
-	// Create the shader program
 	console.log(vertexShader);
 	const shaderProgram = gl.createProgram();
 	gl.attachShader(shaderProgram, vertexShader);
 	gl.attachShader(shaderProgram, fragmentShader);
 	gl.linkProgram(shaderProgram);
-
-	// If creating the shader program failed, alert
 
 	if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
 		console.error(
@@ -155,19 +150,10 @@ function loadShader(gl, type, source) {
 	return shader;
 }
 
-//
-// Initialize a texture and load an image.
-// When the image finished loading copy it into the texture.
-//
 function loadTexture(gl, url) {
 	const texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	// Because images have to be downloaded over the internet
-	// they might take a moment until they are ready.
-	// Until then put a single pixel in the texture so we can
-	// use it immediately. When the image has finished downloading
-	// we'll update the texture with the contents of the image.
 	const level = 0;
 	const internalFormat = gl.RGBA;
 	const width = 1;
@@ -200,20 +186,14 @@ function loadTexture(gl, url) {
 			image,
 		);
 
-		// WebGL1 has different requirements for power of 2 images
-		// vs. non power of 2 images so check if the image is a
-		// power of 2 in both dimensions.
 		if (
 			isPowerOf2(image.width) &&
 			isPowerOf2(image.height)
 		) {
-			// Yes, it's a power of 2. Generate mips.
 			gl.generateMipmap(
 				gl.TEXTURE_2D,
 			);
 		} else {
-			// No, it's not a power of 2. Turn off mips and set
-			// wrapping to clamp to edge
 			gl.texParameteri(
 				gl.TEXTURE_2D,
 				gl.TEXTURE_WRAP_S,

@@ -7,7 +7,7 @@ function initBuffers(gl) {
 		position: positionBuffer,
 		textureCoord: textureCoordBuffer,
 		indices: indexBuffer,
-	  };	  
+	};
 }
 
 function initPositionBuffer(gl) {
@@ -49,7 +49,6 @@ function initPositionBuffer(gl) {
 
 	return positionBuffer;
 }
-
 function initColorBuffer(gl) {
 	const faceColors = [
 		[1.0, 1.0, 1.0, 1.0], // Front face: white
@@ -60,13 +59,10 @@ function initColorBuffer(gl) {
 		[1.0, 0.0, 1.0, 1.0], // Left face: purple
 	];
 
-	// Convert the array of colors into a table for all the vertices.
-
 	var colors = [];
 
 	for (var j = 0; j < faceColors.length; ++j) {
 		const c = faceColors[j];
-		// Repeat each color four times for the four vertices of the face
 		colors = colors.concat(c, c, c, c);
 	}
 
