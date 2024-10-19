@@ -3,7 +3,7 @@ main();
 import { initBuffers } from "./initBuffers.js";
 import { drawScene } from "./drawScene.js";
 
-let squareRotation = 0.0;
+let cubeRotation = 0.0;
 let deltaTime = 0;
 
 function main() {
@@ -78,13 +78,9 @@ function main() {
 		deltaTime = now - then;
 		then = now;
 
-		drawScene(
-			gl,
-			programInfo,
-			buffers,
-			squareRotation,
-		);
-		squareRotation += deltaTime;
+		drawScene(gl, programInfo, buffers, cubeRotation);
+		cubeRotation += deltaTime;
+		
 
 		requestAnimationFrame(render);
 	}
