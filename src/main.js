@@ -85,6 +85,16 @@ function main() {
 	let then = 0;
 
 	function render(now) {
+		var width = document.body.clientWidth;
+		var height = document.body.clientHeight;
+		canvas.width = width;
+		canvas.height = height;
+		gl.viewport(
+			0,
+			0,
+			width, height
+		);
+
 		now *= 0.001; // to second
 		deltaTime = now - then;
 		then = now;
