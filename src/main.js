@@ -1,10 +1,56 @@
-main();
-
 import { initBuffers } from "./initBuffers.js";
 import { drawScene } from "./drawScene.js";
 
 let cubeRotation = 0.0;
 let deltaTime = 0;
+
+const vertexPos = [
+	1, -1, 1,
+	1, -1, -1,
+	1, 1, -1,
+	1, 1, 1,
+	-1, 1, 1,
+	-1, 1, -1,
+	-1, -1, -1,
+	-1, -1, 1,
+];
+
+const indices = [
+	1, 2, 3,
+	1, 3, 4,
+	5, 6, 7,
+	5, 7, 8,
+	4, 5, 8,
+	4, 8, 1,
+	8, 7, 2,
+	8, 2, 1,
+	4, 3, 6,
+	4, 6, 5,
+	2, 7, 6,
+	2, 6, 3,
+].map((value) => value-1);
+
+var textureCoords = [];
+indices.forEach((value, index) => {
+	var temp = [
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	];
+	textureCoords = textureCoords.concat(temp[index % temp.length])
+})
+
+textureCoords = [
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+];
 
 function main() {
 	const canvas = document.querySelector("#canvas");
@@ -78,7 +124,7 @@ function main() {
 		},
 	};
 
-	const buffers = initBuffers(gl);
+	const buffers = initBuffers(gl, vertexPos, textureCoords, indices);
 
 	const texture = loadTexture(gl, "/cubeTexture.png");
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -99,13 +145,13 @@ function main() {
 		now *= 0.001; // to second
 		deltaTime = now - then;
 		then = now;
-
 		drawScene(
 			gl,
 			programInfo,
 			buffers,
 			texture,
 			cubeRotation,
+			indices.length
 		);
 
 		cubeRotation += deltaTime;
@@ -229,3 +275,5 @@ function loadTexture(gl, url) {
 function isPowerOf2(value) {
 	return (value & (value - 1)) === 0;
 }
+
+main();

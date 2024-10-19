@@ -1,4 +1,4 @@
-function drawScene(gl, programInfo, buffers, texture, cubeRotation) {
+function drawScene(gl, programInfo, buffers, texture, cubeRotation, vertexCount) {
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clearDepth(1.0);
 	gl.enable(gl.DEPTH_TEST);
@@ -73,7 +73,6 @@ function drawScene(gl, programInfo, buffers, texture, cubeRotation) {
 	gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
 
 	{
-		const vertexCount = 3*12;
 		const type = gl.UNSIGNED_SHORT;
 		const offset = 0;
 		gl.drawElements(
@@ -125,13 +124,12 @@ function setColorAttribute(gl, buffers, programInfo) {
 	);
 }
 
-// tell webgl how to pull out the texture coordinates from buffer
 function setTextureAttribute(gl, buffers, programInfo) {
-	const num = 2; // every coordinate composed of 2 values
-	const type = gl.FLOAT; // the data in the buffer is 32-bit float
-	const normalize = false; // don't normalize
-	const stride = 0; // how many bytes to get from one set to the next
-	const offset = 0; // how many bytes inside the buffer to start from
+	const num = 2;
+	const type = gl.FLOAT;
+	const normalize = false;
+	const stride = 0;
+	const offset = 0;
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
 	gl.vertexAttribPointer(
 		programInfo.attribLocations.textureCoord,
