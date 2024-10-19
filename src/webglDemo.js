@@ -1,9 +1,5 @@
 main();
 
-//
-// start here
-//
-
 import { initBuffers } from "./initBuffers.js";
 import { drawScene } from "./drawScene.js";
 
@@ -12,10 +8,8 @@ let deltaTime = 0;
 
 function main() {
 	const canvas = document.querySelector("#canvas");
-	// Initialize the GL context
 	const gl = canvas.getContext("webgl2");
 
-	// Only continue if WebGL is available and working
 	if (gl === null) {
 		alert(
 			"Unable to initialize WebGL. Your browser or machine may not support it.",
@@ -23,12 +17,8 @@ function main() {
 		return;
 	}
 
-	// Set clear color to black, fully opaque
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	// Clear the color buffer with specified clear color
 	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	// Vertex shader program
 
 	const vsSource = `
     attribute vec4 aVertexPosition;
@@ -45,8 +35,6 @@ function main() {
     }
   	`;
 
-	// Fragment shader program
-
 	const fsSource = `
 	varying lowp vec4 vColor;
 
@@ -55,11 +43,8 @@ function main() {
 	}
 	`;
 
-	// Initialize a shader program; this is where all the lighting
-	// for the vertices and so forth is established.
 	const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 
-	// this is all the info needed for the shader program
 	const programInfo = {
 		program: shaderProgram,
 		attribLocations: {
@@ -84,16 +69,12 @@ function main() {
 		},
 	};
 
-	// Here's where we call the routine that builds all the
-	// objects we'll be drawing.
 	const buffers = initBuffers(gl);
 
-	// Draw the scene
 	let then = 0;
 
-	// Draw the scene repeatedly
 	function render(now) {
-		now *= 0.001; // convert to seconds
+		now *= 0.001; // to second
 		deltaTime = now - then;
 		then = now;
 
@@ -110,9 +91,6 @@ function main() {
 	requestAnimationFrame(render);
 }
 
-//
-// Initialize a shader program, so WebGL knows how to draw our data
-//
 function initShaderProgram(gl, vsSource, fsSource) {
 	const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
 	const fragmentShader = loadShader(
@@ -142,22 +120,12 @@ function initShaderProgram(gl, vsSource, fsSource) {
 	return shaderProgram;
 }
 
-//
-// creates a shader of the given type, uploads the source and
-// compiles it.
-//
 function loadShader(gl, type, source) {
 	const shader = gl.createShader(type);
 
-	// Send the source to the shader object
-
 	gl.shaderSource(shader, source);
 
-	// Compile the shader program
-
 	gl.compileShader(shader);
-
-	// See if it compiled successfully
 
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
 		alert(
