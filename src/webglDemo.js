@@ -1,10 +1,14 @@
-import { initBuffers } from "./initBuffers.js";
-import { drawScene } from "./drawScene.js";
 main();
 
 //
 // start here
 //
+
+import { initBuffers } from "./initBuffers.js";
+import { drawScene } from "./drawScene.js";
+
+let squareRotation = 0.0;
+let deltaTime = 0;
 
 function main() {
 	const canvas = document.querySelector("#canvas");
@@ -85,7 +89,25 @@ function main() {
 	const buffers = initBuffers(gl);
 
 	// Draw the scene
-	drawScene(gl, programInfo, buffers);
+	let then = 0;
+
+	// Draw the scene repeatedly
+	function render(now) {
+		now *= 0.001; // convert to seconds
+		deltaTime = now - then;
+		then = now;
+
+		drawScene(
+			gl,
+			programInfo,
+			buffers,
+			squareRotation,
+		);
+		squareRotation += deltaTime;
+
+		requestAnimationFrame(render);
+	}
+	requestAnimationFrame(render);
 }
 
 //
