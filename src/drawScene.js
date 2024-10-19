@@ -5,8 +5,7 @@ function drawScene(gl, programInfo, buffers, texture, cubeRotation) {
 	gl.depthFunc(gl.LEQUAL);
 
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-	const fieldOfView = (45 * Math.PI) / 180;
+	const FOV = 60;
 	const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 	const zNear = 0.1;
 	const zFar = 100.0;
@@ -14,7 +13,7 @@ function drawScene(gl, programInfo, buffers, texture, cubeRotation) {
 
 	mat4.perspective(
 		projectionMatrix,
-		fieldOfView,
+		(FOV * Math.PI) / 180,
 		aspect,
 		zNear,
 		zFar,
@@ -74,7 +73,7 @@ function drawScene(gl, programInfo, buffers, texture, cubeRotation) {
 	gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
 
 	{
-		const vertexCount = 36;
+		const vertexCount = 3*12;
 		const type = gl.UNSIGNED_SHORT;
 		const offset = 0;
 		gl.drawElements(

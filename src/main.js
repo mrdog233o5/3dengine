@@ -11,7 +11,7 @@ function main() {
 	const gl = canvas.getContext("webgl2");
 
 	if (gl === null) {
-		alert(
+		console.error(
 			"Unable to initialize WebGL. Your browser or machine may not support it.",
 		);
 		return;
@@ -44,6 +44,7 @@ function main() {
 
 	void main(void) {
 		fragColor = texture(uSampler, vTextureCoord);
+		// fragColor = vec4(1,1,1,1);
 	}
 	`;
 
