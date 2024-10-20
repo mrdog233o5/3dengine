@@ -5,54 +5,34 @@ let cubeRotation = 0.0;
 let deltaTime = 0;
 
 const vertexPos = [
-	1, -1, 1,
-	1, -1, -1,
-	1, 1, -1,
-	1, 1, 1,
-	-1, 1, 1,
-	-1, 1, -1,
-	-1, -1, -1,
-	-1, -1, 1,
+	1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, 1, -1, -1,
+	-1, -1, -1, -1, 1,
 ];
 
-const vertexPos2 = vertexPos.map((value, index) => (index % 3 == 0 ? value + 3 : value));
+const vertexPos2 = vertexPos.map((value, index) =>
+	index % 3 == 0 ? value + 3 : value,
+);
 console.log(vertexPos2);
 
 const indices = [
-	1, 2, 3,
-	1, 3, 4,
-	5, 6, 7,
-	5, 7, 8,
-	4, 5, 8,
-	4, 8, 1,
-	8, 7, 2,
-	8, 2, 1,
-	4, 3, 6,
-	4, 6, 5,
-	2, 7, 6,
-	2, 6, 3,
-].map((value) => value-1);
+	1, 2, 3, 1, 3, 4, 5, 6, 7, 5, 7, 8, 4, 5, 8, 4, 8, 1, 8, 7, 2,
+	8, 2, 1, 4, 3, 6, 4, 6, 5, 2, 7, 6, 2, 6, 3,
+].map(value => value - 1);
 
 var textureCoords = [];
 indices.forEach((value, index) => {
-	var temp = [
-		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 
-	];
-	textureCoords = textureCoords.concat(temp[index % temp.length])
-})
+	var temp = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0];
+	textureCoords = textureCoords.concat(temp[index % temp.length]);
+});
 
 textureCoords = [
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0,
+	1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+	1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+	1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0,
+	0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
+	0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
 ];
 
 function main() {
@@ -127,7 +107,6 @@ function main() {
 		},
 	};
 
-
 	const texture = loadTexture(gl, "/cubeTexture.png");
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 
@@ -138,22 +117,26 @@ function main() {
 		var height = document.body.clientHeight;
 		canvas.width = width;
 		canvas.height = height;
-		gl.viewport(
-			0,
-			0,
-			width, height
-		);
+		gl.viewport(0, 0, width, height);
 		gl.clearColor(0.0, 0.0, 0.0, 1.0);
 		gl.clearDepth(1.0);
 		gl.enable(gl.DEPTH_TEST);
 		gl.depthFunc(gl.LEQUAL);
 
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.clear(
+			gl.COLOR_BUFFER_BIT |
+				gl.DEPTH_BUFFER_BIT,
+		);
 
 		now *= 0.001; // to second
 		deltaTime = now - then;
 		then = now;
-		var buffers = initBuffers(gl, vertexPos, textureCoords, indices);
+		var buffers = initBuffers(
+			gl,
+			vertexPos,
+			textureCoords,
+			indices,
+		);
 		renderObject(
 			gl,
 			programInfo,
@@ -161,8 +144,8 @@ function main() {
 			texture,
 			cubeRotation,
 			indices.length,
-			[-1.5,0,-6],
-			[1,1,1]
+			[-1.5, 0, -6],
+			[1, 1, 1],
 		);
 
 		renderObject(
@@ -172,8 +155,8 @@ function main() {
 			texture,
 			cubeRotation,
 			indices.length,
-			[1.5,0,-6],
-			[1,1,1]
+			[1.5, 0, -6],
+			[1, 1, 1],
 		);
 
 		cubeRotation += deltaTime;

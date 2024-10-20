@@ -1,4 +1,13 @@
-function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCount, translateMatrix, rotationMatrix) {
+function renderObject(
+	gl,
+	programInfo,
+	buffers,
+	texture,
+	cubeRotation,
+	vertexCount,
+	translateMatrix,
+	rotationMatrix,
+) {
 	const FOV = 60;
 	const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 	const zNear = 0.1;
@@ -24,20 +33,8 @@ function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCou
 		modelViewMatrix,
 		modelViewMatrix,
 		cubeRotation,
-		rotationMatrix
+		rotationMatrix,
 	);
-	// mat4.rotate(
-	// 	modelViewMatrix,
-	// 	modelViewMatrix,
-	// 	cubeRotation * 0.7,
-	// 	[0, 1, 0],
-	// );
-	// mat4.rotate(
-	// 	modelViewMatrix,
-	// 	modelViewMatrix,
-	// 	cubeRotation * 0.3,
-	// 	[1, 0, 0],
-	// );
 
 	setPositionAttribute(gl, buffers, programInfo);
 	setTextureAttribute(gl, buffers, programInfo);
@@ -57,13 +54,10 @@ function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCou
 		modelViewMatrix,
 	);
 
-	// Tell WebGL we want to affect texture unit 0
 	gl.activeTexture(gl.TEXTURE0);
 
-	// Bind the texture to texture unit 0
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	// Tell the shader we bound the texture to texture unit 0
 	gl.uniform1i(programInfo.uniformLocations.uSampler, 0);
 
 	{
@@ -118,4 +112,4 @@ function setTextureAttribute(gl, buffers, programInfo) {
 	);
 }
 
-export { renderObject};
+export { renderObject };
