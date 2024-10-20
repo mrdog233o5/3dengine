@@ -2,37 +2,11 @@ import { initBuffers } from "./initBuffers.js";
 import { renderObject } from "./renderObject.js";
 
 let cubeRotation = 0.0;
-let deltaTime = 0;
-
-const vertexPos = [
-	1, -1, 1, 1, -1, -1, 1, 1, -1, 1, 1, 1, -1, 1, 1, -1, 1, -1, -1,
-	-1, -1, -1, -1, 1,
-];
-
-const indices = [
-	1, 2, 3, 1, 3, 4, 5, 6, 7, 5, 7, 8, 4, 5, 8, 4, 8, 1, 8, 7, 2,
-	8, 2, 1, 4, 3, 6, 4, 6, 5, 2, 7, 6, 2, 6, 3,
-].map(value => value - 1);
-
-var textureCoords = [];
-indices.forEach((value, index) => {
-	var temp = [0.0, 0.0, 1.0, 0.0, 1.0, 1.0];
-	textureCoords = textureCoords.concat(temp[index % temp.length]);
-});
-
-textureCoords = [
-	0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0,
-	1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0,
-	1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0,
-	1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0,
-	1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0,
-	0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0,
-	0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
-];
 
 class Dimet {
 	constructor(canvasElement) {
 		this.canvas = canvasElement;
+		this.objects = [];
 	}
 
 	init() {
@@ -43,7 +17,7 @@ class Dimet {
 
 	initWebGL() {
 		this.gl = canvas.getContext("webgl2");
-	
+
 		if (this.gl === null) {
 			console.error(
 				"Unable to initialize Webgl. Your browser or machine may not support it.",
@@ -67,7 +41,7 @@ class Dimet {
 			  vTextureCoord = aTextureCoord;
 		}
 		  `;
-	
+
 		const fsSource = `#version 300 es
 		precision highp float;
 		in vec2 vTextureCoord;
@@ -80,42 +54,72 @@ class Dimet {
 			// this.fragColor = vec4(1,1,1,1);
 		}
 		`;
-	
-		this.shaderProgram = initShaderProgram(this.gl, vsSource, fsSource);
+
+		this.shaderProgram = initShaderProgram(
+			this.gl,
+			vsSource,
+			fsSource,
+		);
 	}
 
 	initProgramProps() {
-	
 		this.programProps = {
 			program: this.shaderProgram,
 			attribLocations: {
 				vertexPosition: this.gl.getAttribLocation(
-					this.shaderProgram,
+					this
+						.shaderProgram,
 					"aVertexPosition",
 				),
 				textureCoord: this.gl.getAttribLocation(
-					this.shaderProgram,
+					this
+						.shaderProgram,
 					"aTextureCoord",
 				),
 			},
 			uniformLocations: {
 				projectionMatrix: this.gl.getUniformLocation(
-					this.shaderProgram,
+					this
+						.shaderProgram,
 					"uProjectionMatrix",
 				),
 				modelViewMatrix: this.gl.getUniformLocation(
-					this.shaderProgram,
+					this
+						.shaderProgram,
 					"uModelViewMatrix",
 				),
 				uSampler: this.gl.getUniformLocation(
-					this.shaderProgram,
+					this
+						.shaderProgram,
 					"uSampler",
 				),
 			},
 		};
-	
-		this.texture = loadTexture(this.gl, "/cubeTexture.png");
-		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+
+		this.texture = loadTexture(
+			this.gl,
+			"/cubeTexture.png",
+		);
+		this.gl.pixelStorei(
+			this.gl.UNPACK_FLIP_Y_WEBGL,
+			true,
+		);
+	}
+
+	drawObject(
+		vertexPos,
+		textureCoords,
+		indices,
+		translationMatrix,
+		rotationMatrix,
+	) {
+		this.objects.push([
+			vertexPos,
+			textureCoords,
+			indices,
+			translationMatrix,
+			rotationMatrix,
+		]);
 	}
 
 	render() {
@@ -131,26 +135,30 @@ class Dimet {
 
 		this.gl.clear(
 			this.gl.COLOR_BUFFER_BIT |
-				this.gl.DEPTH_BUFFER_BIT,
+				this.gl
+					.DEPTH_BUFFER_BIT,
 		);
 
-		var buffers = initBuffers(
-			this.gl,
-			vertexPos,
-			textureCoords,
-			indices,
-		);
-		renderObject(
-			this.gl,
-			this.programProps,
-			buffers,
-			this.texture,
-			cubeRotation,
-			indices.length,
-			[0, 0, -6],
-			[1, 1, 1],
-		);
-	
+		this.objects.forEach(object => {
+			var buffers = initBuffers(
+				this.gl,
+				object[0],
+				object[1],
+				object[2],
+			);
+			renderObject(
+				this.gl,
+				this
+					.programProps,
+				buffers,
+				this.texture,
+				cubeRotation,
+				object[2].length,
+				object[3],
+				object[4],
+			);
+		});
+
 		cubeRotation += 0.01;
 	}
 }
