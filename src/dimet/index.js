@@ -30,135 +30,129 @@ textureCoords = [
 	0.0, 1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
 ];
 
-function main() {
-	const canvas = document.querySelector("#canvas");
-	const gl = canvas.getContext("webgl2");
-
-	if (gl === null) {
-		console.error(
-			"Unable to initialize WebGL. Your browser or machine may not support it.",
-		);
-		return;
+class Dimet {
+	constructor(canvasElement) {
+		this.canvas = canvasElement;
 	}
 
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl.clear(gl.COLOR_BUFFER_BIT);
-
-	const vsSource = `#version 300 es
-    in vec4 aVertexPosition;
-    in vec2 aTextureCoord;
-
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-
-    out highp vec2 vTextureCoord;
-
-    void main(void) {
-      	gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      	vTextureCoord = aTextureCoord;
-    }
-  	`;
-
-	const fsSource = `#version 300 es
-	precision highp float;
-	in vec2 vTextureCoord;
-
-	uniform sampler2D uSampler;
-	out vec4 fragColor;
-
-	void main(void) {
-		fragColor = texture(uSampler, vTextureCoord);
-		// fragColor = vec4(1,1,1,1);
+	init() {
+		this.initWebGL();
+		this.initShaderProgram();
+		this.initProgramProps();
 	}
-	`;
 
-	const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
+	initWebGL() {
+		this.gl = canvas.getContext("webgl2");
+	
+		if (this.gl === null) {
+			console.error(
+				"Unable to initialize Webgl. Your browser or machine may not support it.",
+			);
+			return;
+		}
+	}
 
-	const programInfo = {
-		program: shaderProgram,
-		attribLocations: {
-			vertexPosition: gl.getAttribLocation(
-				shaderProgram,
-				"aVertexPosition",
-			),
-			textureCoord: gl.getAttribLocation(
-				shaderProgram,
-				"aTextureCoord",
-			),
-		},
-		uniformLocations: {
-			projectionMatrix: gl.getUniformLocation(
-				shaderProgram,
-				"uProjectionMatrix",
-			),
-			modelViewMatrix: gl.getUniformLocation(
-				shaderProgram,
-				"uModelViewMatrix",
-			),
-			uSampler: gl.getUniformLocation(
-				shaderProgram,
-				"uSampler",
-			),
-		},
-	};
+	initShaderProgram() {
+		const vsSource = `#version 300 es
+		in vec4 aVertexPosition;
+		in vec2 aTextureCoord;
+	
+		uniform mat4 uModelViewMatrix;
+		uniform mat4 uProjectionMatrix;
+	
+		out highp vec2 vTextureCoord;
+	
+		void main(void) {
+			  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+			  vTextureCoord = aTextureCoord;
+		}
+		  `;
+	
+		const fsSource = `#version 300 es
+		precision highp float;
+		in vec2 vTextureCoord;
+	
+		uniform sampler2D uSampler;
+		out vec4 fragColor;
+	
+		void main(void) {
+			fragColor = texture(uSampler, vTextureCoord);
+			// this.fragColor = vec4(1,1,1,1);
+		}
+		`;
+	
+		this.shaderProgram = initShaderProgram(this.gl, vsSource, fsSource);
+	}
 
-	const texture = loadTexture(gl, "/cubeTexture.png");
-	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+	initProgramProps() {
+	
+		this.programProps = {
+			program: this.shaderProgram,
+			attribLocations: {
+				vertexPosition: this.gl.getAttribLocation(
+					this.shaderProgram,
+					"aVertexPosition",
+				),
+				textureCoord: this.gl.getAttribLocation(
+					this.shaderProgram,
+					"aTextureCoord",
+				),
+			},
+			uniformLocations: {
+				projectionMatrix: this.gl.getUniformLocation(
+					this.shaderProgram,
+					"uProjectionMatrix",
+				),
+				modelViewMatrix: this.gl.getUniformLocation(
+					this.shaderProgram,
+					"uModelViewMatrix",
+				),
+				uSampler: this.gl.getUniformLocation(
+					this.shaderProgram,
+					"uSampler",
+				),
+			},
+		};
+	
+		this.texture = loadTexture(this.gl, "/cubeTexture.png");
+		this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+	}
 
-	let then = 0;
-
-	function render(now) {
+	render() {
 		var width = document.body.clientWidth;
 		var height = document.body.clientHeight;
 		canvas.width = width;
 		canvas.height = height;
-		gl.viewport(0, 0, width, height);
-		gl.clearColor(0.0, 0.0, 0.0, 1.0);
-		gl.clearDepth(1.0);
-		gl.enable(gl.DEPTH_TEST);
-		gl.depthFunc(gl.LEQUAL);
+		this.gl.viewport(0, 0, width, height);
+		this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		this.gl.clearDepth(1.0);
+		this.gl.enable(this.gl.DEPTH_TEST);
+		this.gl.depthFunc(this.gl.LEQUAL);
 
-		gl.clear(
-			gl.COLOR_BUFFER_BIT |
-				gl.DEPTH_BUFFER_BIT,
+		this.gl.clear(
+			this.gl.COLOR_BUFFER_BIT |
+				this.gl.DEPTH_BUFFER_BIT,
 		);
 
-		now *= 0.001; // to second
-		deltaTime = now - then;
-		then = now;
 		var buffers = initBuffers(
-			gl,
+			this.gl,
 			vertexPos,
 			textureCoords,
 			indices,
 		);
 		renderObject(
-			gl,
-			programInfo,
+			this.gl,
+			this.programProps,
 			buffers,
-			texture,
+			this.texture,
 			cubeRotation,
 			indices.length,
-			[-1.5, 0, -6],
+			[0, 0, -6],
 			[1, 1, 1],
 		);
-
-		renderObject(
-			gl,
-			programInfo,
-			buffers,
-			texture,
-			cubeRotation,
-			indices.length,
-			[1.5, 0, -6],
-			[1, 1, 1],
-		);
-
-		cubeRotation += deltaTime;
-
-		requestAnimationFrame(render);
+	
+		cubeRotation += 0.01;
 	}
-	requestAnimationFrame(render);
 }
 
 function initShaderProgram(gl, vsSource, fsSource) {
@@ -276,4 +270,4 @@ function isPowerOf2(value) {
 	return (value & (value - 1)) === 0;
 }
 
-export {main};
+export { Dimet };
