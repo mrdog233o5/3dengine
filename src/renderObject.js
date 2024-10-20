@@ -1,4 +1,4 @@
-function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCount) {
+function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCount, translateMatrix, rotationMatrix) {
 	const FOV = 60;
 	const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 	const zNear = 0.1;
@@ -18,26 +18,26 @@ function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCou
 	mat4.translate(
 		modelViewMatrix,
 		modelViewMatrix,
-		[-0.0, 0.0, -6.0],
+		translateMatrix,
 	);
 	mat4.rotate(
 		modelViewMatrix,
 		modelViewMatrix,
 		cubeRotation,
-		[0, 0, 1],
+		rotationMatrix
 	);
-	mat4.rotate(
-		modelViewMatrix,
-		modelViewMatrix,
-		cubeRotation * 0.7,
-		[0, 1, 0],
-	);
-	mat4.rotate(
-		modelViewMatrix,
-		modelViewMatrix,
-		cubeRotation * 0.3,
-		[1, 0, 0],
-	);
+	// mat4.rotate(
+	// 	modelViewMatrix,
+	// 	modelViewMatrix,
+	// 	cubeRotation * 0.7,
+	// 	[0, 1, 0],
+	// );
+	// mat4.rotate(
+	// 	modelViewMatrix,
+	// 	modelViewMatrix,
+	// 	cubeRotation * 0.3,
+	// 	[1, 0, 0],
+	// );
 
 	setPositionAttribute(gl, buffers, programInfo);
 	setTextureAttribute(gl, buffers, programInfo);

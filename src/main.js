@@ -160,17 +160,20 @@ function main() {
 			buffers,
 			texture,
 			cubeRotation,
-			indices.length
+			indices.length,
+			[-1.5,0,-6],
+			[1,1,1]
 		);
 
-		var buffers2 = initBuffers(gl, vertexPos2, textureCoords, indices);
 		renderObject(
 			gl,
 			programInfo,
-			buffers2,
+			buffers,
 			texture,
 			cubeRotation,
-			indices.length
+			indices.length,
+			[1.5,0,-6],
+			[1,1,1]
 		);
 
 		cubeRotation += deltaTime;
