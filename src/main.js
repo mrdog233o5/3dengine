@@ -1,5 +1,5 @@
 import { initBuffers } from "./initBuffers.js";
-import { drawScene } from "./drawScene.js";
+import { renderObject } from "./renderObject.js";
 
 let cubeRotation = 0.0;
 let deltaTime = 0;
@@ -14,6 +14,9 @@ const vertexPos = [
 	-1, -1, -1,
 	-1, -1, 1,
 ];
+
+const vertexPos2 = vertexPos.map((value, index) => (index % 3 == 0 ? value + 3 : value));
+console.log(vertexPos2);
 
 const indices = [
 	1, 2, 3,
@@ -33,7 +36,7 @@ const indices = [
 var textureCoords = [];
 indices.forEach((value, index) => {
 	var temp = [
-		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0,
+		0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 
 	];
 	textureCoords = textureCoords.concat(temp[index % temp.length])
 })
@@ -124,7 +127,6 @@ function main() {
 		},
 	};
 
-	const buffers = initBuffers(gl, vertexPos, textureCoords, indices);
 
 	const texture = loadTexture(gl, "/cubeTexture.png");
 	gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
@@ -141,14 +143,31 @@ function main() {
 			0,
 			width, height
 		);
+		gl.clearColor(0.0, 0.0, 0.0, 1.0);
+		gl.clearDepth(1.0);
+		gl.enable(gl.DEPTH_TEST);
+		gl.depthFunc(gl.LEQUAL);
+
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 		now *= 0.001; // to second
 		deltaTime = now - then;
 		then = now;
-		drawScene(
+		var buffers = initBuffers(gl, vertexPos, textureCoords, indices);
+		renderObject(
 			gl,
 			programInfo,
 			buffers,
+			texture,
+			cubeRotation,
+			indices.length
+		);
+
+		var buffers2 = initBuffers(gl, vertexPos2, textureCoords, indices);
+		renderObject(
+			gl,
+			programInfo,
+			buffers2,
 			texture,
 			cubeRotation,
 			indices.length

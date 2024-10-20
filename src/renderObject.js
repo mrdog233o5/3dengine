@@ -1,10 +1,4 @@
-function drawScene(gl, programInfo, buffers, texture, cubeRotation, vertexCount) {
-	gl.clearColor(0.0, 0.0, 0.0, 1.0);
-	gl.clearDepth(1.0);
-	gl.enable(gl.DEPTH_TEST);
-	gl.depthFunc(gl.LEQUAL);
-
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+function renderObject(gl, programInfo, buffers, texture, cubeRotation, vertexCount) {
 	const FOV = 60;
 	const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
 	const zNear = 0.1;
@@ -124,4 +118,4 @@ function setTextureAttribute(gl, buffers, programInfo) {
 	);
 }
 
-export { drawScene };
+export { renderObject};
