@@ -22,8 +22,8 @@ var textureCoords = [
 
 const c = new Dimet(document.querySelector("#canvas"));
 c.init();
-c.drawObject(vertexPos, textureCoords, indices, [2, 0, -6], [1, 1, 1]);
-c.drawObject(vertexPos, textureCoords, indices, [-2, 0, -6], [1, 1, 1]);
+c.drawObject(vertexPos, textureCoords, indices, [2, 0, -6], [1, 1, 1], "/a.png");
+c.drawObject(vertexPos, textureCoords, indices, [-2, 0, -6], [1, 1, 1], "/b.png");
 var a = () => {
 	c.render();
 	requestAnimationFrame(a);

@@ -95,15 +95,6 @@ class Dimet {
 				),
 			},
 		};
-
-		this.texture = loadTexture(
-			this.gl,
-			"/cubeTexture.png",
-		);
-		this.gl.pixelStorei(
-			this.gl.UNPACK_FLIP_Y_WEBGL,
-			true,
-		);
 	}
 
 	drawObject(
@@ -112,6 +103,7 @@ class Dimet {
 		indices,
 		translationMatrix,
 		rotationMatrix,
+		textureURL
 	) {
 		this.objects.push([
 			vertexPos,
@@ -119,6 +111,7 @@ class Dimet {
 			indices,
 			translationMatrix,
 			rotationMatrix,
+			loadTexture(this.gl, textureURL)
 		]);
 	}
 
@@ -132,6 +125,10 @@ class Dimet {
 		this.gl.clearDepth(1.0);
 		this.gl.enable(this.gl.DEPTH_TEST);
 		this.gl.depthFunc(this.gl.LEQUAL);
+		this.gl.pixelStorei(
+			this.gl.UNPACK_FLIP_Y_WEBGL,
+			true,
+		);
 
 		this.gl.clear(
 			this.gl.COLOR_BUFFER_BIT |
@@ -151,7 +148,7 @@ class Dimet {
 				this
 					.programProps,
 				buffers,
-				this.texture,
+				object[5],
 				cubeRotation,
 				object[2].length,
 				object[3],
